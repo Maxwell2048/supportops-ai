@@ -18,7 +18,7 @@ The owner supplied https://github.com/Maxwell2048/supportops-ai.git and the auth
 
 ## Initial history and English conversion
 
-The original first commit contained the accumulated baseline through S08, rather than fabricated per-stage history. [Initial message](commit-notes/initial-through-s08.txt), [S08 message](commit-notes/S08.txt), and the publication record added in the following documentation commit document that scope.
+The original first commit contained the accumulated baseline through S08, rather than fabricated per-stage history. [Initial message](commit-notes/initial-through-s08.txt), [S08 message](commit-notes/S08.txt), and [publication evidence](evidence/2026-10-22-git-publication.md) document that scope.
 
 The owner subsequently explicitly requested English throughout the already-published repository. Replace the two published snapshots/messages with English equivalents, retain original author dates, and keep a local-only backup of the old tip. Before updating the remote, verify its expected hash and use an exact --force-with-lease. Never force past newly observed remote work. Do not push the old-language backup ref. Old evidence identifiers remain labeled legacy, not current links.
 
