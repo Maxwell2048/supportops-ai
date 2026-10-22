@@ -1,0 +1,17 @@
+feat(audit): add transactional audit, manager queries, and redacted request tracing
+
+I extended the S07 workflow with traceable operations: each effective ticket write records its actor, ticket version, and server-generated request ID, while audit failures roll back the entire business change.
+
+Important changes and rationale:
+- Add the forward-only 0003 audit-table migration without replacing existing business/idempotency data or inventing historical request IDs.
+- Write audit, ticket, message, event, and idempotency result in one transaction so a successful business change cannot lose its audit. Enforce unique ticket/version; replayed successes create no duplicate audit.
+- Preserve the execution-time role and allowlist minimal changes instead of copying private notes, reopening reasons, bodies, or credentials.
+- Add manager-only GET /api/audit-events with resource/actor/request/action filters and identity/filter-bound signed keyset pagination.
+- Emit JSON request logs linking safe error codes to response IDs, excluding raw URLs, queries, headers, bodies, tokens, SQL parameters, and exception text. Unexpected failures return generic500 after rollback.
+- Verify real PostgreSQL CHECK failures, rollback/retry, independent-connection concurrency, authorization, pagination, redaction, and existing-data upgrades.
+
+Validation: S08 passed 173 backend tests with zero skips; clean frontend install/build passed. The real HTTP workflow ended version 13/closed/archived with 13 success audits and none added by failed/replayed requests. Exact commands and limitations: docs/evidence/2026-10-22-audit-verification.md.
+
+Limitations: process-local failure logs, no database-administrator tamper resistance, no cloud/remote-CI acceptance or business UI. Next: S09 typed API and login/list/details with four request states.
+
+This project was implemented and verified with AI assistance. This first-person maintenance record does not claim that I independently wrote all code.
