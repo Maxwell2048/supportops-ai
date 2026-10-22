@@ -1,0 +1,15 @@
+feat: establish the SupportOps AI baseline through the M1 ticket and audit backend
+
+This initial commit contains the accumulated engineering baseline through S08. Earlier stages have execution records in docs/evidence, not fabricated separate Git commits. Repository snapshots and messages are presented in English at the owner's request.
+
+I established the FastAPI and React/TypeScript/Vite foundation, exact dependency locks, database Compose, and GitHub Actions configuration, with requirements, role permissions, state transitions, and staged acceptance documented.
+
+The backend uses real PostgreSQL migrations/constraints, Argon2id passwords, short-lived JWTs, and server-side role/object authorization. Ticket APIs cover creation, lists, assignment, public replies, internal notes, state/archive changes, version conflicts, and persistent idempotency. Business writes, messages, events, success audit, and idempotency results commit atomically.
+
+S08 adds manager audit queries, minimal change snapshots, request-ID correlation, and redacted JSON request logs. Tests verify full rollback on audit failure, no duplicate audit on retries, role isolation, and independent-connection races. See docs/commit-notes/S08.txt and docs/evidence for details.
+
+Local .env, virtual environments, node_modules, and builds remain ignored. Only synthetic data is included. The frontend remains a static scaffold; AI, full application Compose, cloud deployment, and remote CI acceptance remain later milestones.
+
+Validation at S08:173 backend tests passed, zero skips; npm ci and frontend production build passed; real HTTP reached version 13/closed/archived with 13 success audits. The English-conversion evidence records its separate rerun.
+
+I used AI assistance for staged implementation/verification. Git author name/email are the owner's explicit choices and are configured only in this repository.

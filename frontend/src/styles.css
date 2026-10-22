@@ -1,0 +1,7 @@
+:root { font-family: system-ui, sans-serif; color: #172e33; background: #f2f6f4; line-height: 1.65; }
+body { margin: 0; }
+main { max-width: 880px; margin: 0 auto; padding: clamp(24px, 6vw, 80px); }
+.eyebrow { color: #286957; font-weight: 700; letter-spacing: .12em; }
+h1 { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.2; }
+section { background: white; border: 1px solid #d4e0da; border-radius: 16px; padding: clamp(20px, 4vw, 36px); margin-top: 40px; }
+li + li { margin-top: 12px; }
