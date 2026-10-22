@@ -1,0 +1,7 @@
+docs: record the initial GitHub publication and remote hash verification
+
+I published the engineering baseline through S08 to Maxwell2048/supportops-ai on main and verified that the remote branch matched the local commit. The publication record preserves legacy hashes from before the owner-requested English history conversion.
+
+This documentation update distinguishes successful publication from unverified remote CI. Before publication,96 candidate files were checked for actual local environment credentials and .env remained ignored.
+
+The English conversion also records repository-wide translation and its own verification. Historical S08 evidence retains173 passing backend tests and a successful frontend build; do not claim remote CI or cloud acceptance.

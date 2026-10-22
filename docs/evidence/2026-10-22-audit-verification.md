@@ -60,4 +60,4 @@ After HTTP: users5/tickets3/messages12/events27/idempotency26/audit13/incomplete
 
 ## Limits at acceptance time
 
-At S08 acceptance there was no remote, author config, or first commit; [message](../commit-notes/S08.txt) was only prepared. Publication happened afterward: the publication record added in the following documentation commit. No remote CI/Azure/AI/persistent-log/admin-tamper/UI/E2E acceptance. Next: S09 typed API/login/list/details. M1 S05-S08 locally verified.
+At S08 acceptance there was no remote, author config, or first commit; [message](../commit-notes/S08.txt) was only prepared. Publication happened afterward: [record](2026-10-22-git-publication.md). No remote CI/Azure/AI/persistent-log/admin-tamper/UI/E2E acceptance. Next: S09 typed API/login/list/details. M1 S05-S08 locally verified.

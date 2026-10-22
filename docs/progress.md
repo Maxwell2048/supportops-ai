@@ -6,7 +6,7 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 
 ## Delivery history
 
-- Repository: [Maxwell2048/supportops-ai](https://github.com/Maxwell2048/supportops-ai), main. The supplied Maxwell identity is configured locally; initial publication is documented in the following commit.
+- Repository: [Maxwell2048/supportops-ai](https://github.com/Maxwell2048/supportops-ai), main. Git identity is configured locally as Maxwell using the supplied email, without global changes. Initial publication is documented in [Git evidence](evidence/2026-10-22-git-publication.md).
 - Requirements: [archived brief](planning/project-brief.md). Root README describes current state. Permissions, states, ER/API/data policies began as M0 drafts.
 - 2026-10-16 foundation: FastAPI health/readiness, static React, locks, CI configuration, database Compose; one backend test, real HTTP/OpenAPI, frontend install/build, and Compose parsing passed. At that stage containers/remote CI were unverified: [evidence](evidence/2026-10-16-foundation.md).
 - Initial S05 implementation produced models/migrations/config/readiness/seed/isolated tests and PostgreSQL CI. Only5 tests passed,14 skipped because Docker was unavailable; this was not database acceptance: [record](evidence/2026-10-21-database-foundation.md).
