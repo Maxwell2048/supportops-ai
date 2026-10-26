@@ -17,6 +17,8 @@ def git(*args):
 
 
 def contains_cjk(content):
+    if content.startswith((b'\x89PNG\r\n\x1a\n', b'\xff\xd8\xff')):
+        return False  # Screenshot pixels are not UTF-8 repository prose.
     text = content.decode('utf-8', errors='replace')
     return any(
         0x3400 <= ord(char) <= 0x9FFF

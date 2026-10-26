@@ -1,0 +1,99 @@
+"""Serve the real API with disposable synthetic PostgreSQL fixtures for manual UI checks.
+
+Run from backend: uv run --locked python ../scripts/serve_frontend_check.py
+Only localhost PostgreSQL and a dedicated *_test database are accepted. The
+public synthetic password below is test data, never a development/user secret.
+Ctrl+C stops the API and removes only the random schema owned by this process.
+"""
+
+from pathlib import Path
+import argparse
+import asyncio
+import sys
+from uuid import uuid4
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'backend' / 'src'))
+
+from alembic import command
+from alembic.config import Config
+from sqlalchemy import create_engine, select, text
+from sqlalchemy.engine import make_url
+from sqlalchemy.orm import Session
+import uvicorn
+
+from supportops.config import Settings, load_settings
+from supportops.main import create_app
+from supportops.models import Ticket, User
+from supportops.schemas import MessageCreate, TicketCreate, TicketPatch
+from supportops.security import hash_password
+from supportops.seed import seed, synthetic_id
+from supportops.ticket_service import add_message, create_ticket, patch_ticket
+
+
+PASSWORD = 'S09-local-synthetic-only!'
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--read-delay-ms', type=int, default=0, choices=range(0, 2001), metavar='0..2000')
+    args = parser.parse_args()
+    configured = load_settings().database_url
+    if not configured:
+        raise SystemExit('Configure the local database first')
+    url = make_url(configured)
+    if url.drivername != 'postgresql+psycopg' or url.host not in {'127.0.0.1', 'localhost', '::1'} or not url.database:
+        raise SystemExit('This fixture server accepts localhost PostgreSQL only')
+    test_url = url if url.database.endswith('_test') else url.set(database=url.database + '_test')
+    schema = 'test_s09_browser_' + uuid4().hex
+    admin = create_engine(test_url, hide_parameters=True, connect_args={'connect_timeout': 3})
+    engine = None
+    created = False
+    try:
+        with admin.begin() as connection:
+            connection.execute(text(f'CREATE SCHEMA "{schema}"'))
+        created = True
+        engine = create_engine(test_url, hide_parameters=True, connect_args={'connect_timeout': 3, 'options': f'-csearch_path={schema}'})
+        with engine.begin() as connection:
+            config = Config(str(ROOT / 'backend' / 'alembic.ini'))
+            config.attributes['connection'] = connection
+            command.upgrade(config, 'head')
+        with Session(engine) as session, session.begin():
+            seed(session)
+            for user in session.scalars(select(User)):
+                user.active = True
+                user.password_hash = hash_password(PASSWORD)
+            session.flush()
+            ticket = session.get(Ticket, synthetic_id('ticket-1'))
+            ticket.title = '[S09 browser] Unable to access the sample dashboard'
+            ticket.body = 'Synthetic request: the sample dashboard reports an access error.\nLiteral markup must remain text: <img src=x onerror=alert(1)>'
+            session.flush()
+            patch_ticket(session, synthetic_id('manager'), ticket.id, TicketPatch(expected_version=1, assignee_id=synthetic_id('agent-a')), 'fixture-assign')
+            add_message(session, synthetic_id('agent-a'), ticket.id, MessageCreate(expected_version=2, visibility='internal', body='Internal-only S09 diagnostic note: check the synthetic account flag.'), 'fixture-internal')
+            add_message(session, synthetic_id('agent-a'), ticket.id, MessageCreate(expected_version=3, visibility='public', body='Public update: we are reviewing the sample access issue.'), 'fixture-public')
+            create_ticket(session, synthetic_id('requester-b'), TicketCreate(title='[S09 browser] A separate private request', body='Only requester-b and the manager may view this synthetic request.'), 'fixture-private')
+        print('S09 isolated fixture API: http://127.0.0.1:8765', flush=True)
+        print('Synthetic accounts: requester-a, requester-b, agent-a, agent-b, manager @example.invalid', flush=True)
+        print('Use the public test-only password documented in this script; no local credentials are printed.', flush=True)
+        app = create_app(Settings(jwt_secret='S09-test-only-signing-secret-' * 3, access_token_minutes=1), engine=engine)
+        if args.read_delay_ms:
+            @app.middleware('http')
+            async def delayed_reads(request, call_next):
+                response = await call_next(request)
+                if request.method == 'GET' and request.url.path.startswith('/api/tickets'):
+                    await asyncio.sleep(args.read_delay_ms / 1000)
+                return response
+        print('Fixture sessions last one minute; normal application configuration is unchanged.', flush=True)
+        uvicorn.run(app, host='127.0.0.1', port=8765, proxy_headers=False, access_log=False)
+    finally:
+        if engine is not None:
+            engine.dispose()
+        if created:
+            with admin.begin() as connection:
+                connection.execute(text(f'DROP SCHEMA "{schema}" CASCADE'))
+            print('Removed the owned S09 browser-check schema.', flush=True)
+        admin.dispose()
+
+
+if __name__ == '__main__':
+    main()

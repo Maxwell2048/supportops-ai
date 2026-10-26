@@ -1,6 +1,6 @@
 # Architecture baseline
 
-S05-S08 database, authentication, ticket writes, transactional audit, and request logs are locally verified. The frontend remains a static scaffold; AI modules remain planned.
+S05-S08 database, authentication, ticket writes, transactional audit, and request logs are locally verified. S09 adds typed read-only business pages; caching/write forms and AI modules remain planned.
 
 ```mermaid
 flowchart LR
@@ -18,7 +18,7 @@ The diagram includes planned components. The frontend owns interactions and serv
 | backend/src/supportops | API, security, authorization, ticket transactions; future worker | Login, ticket reads/writes, events/idempotency, pagination, audit/logging |
 | backend/tests | Authentication, authorization, business, concurrency, PostgreSQL | S08: 173 locally passing tests |
 | backend/migrations | Alembic history | 0001 business tables, 0002 idempotency, 0003 audit; empty/existing DB upgrades verified |
-| frontend/src | React pages and API client | Static scaffold |
+| frontend/src | Typed client, sessions, React pages | S09 login/list/details/four-state views locally verified |
 | e2e | Cross-role browser workflows | Reserved for S12 |
 | data | Synthetic data and sources | Minimal seed and explicit local activation verified |
 | evals | Development/holdout data and evaluation | Reserved for S21 |
@@ -37,4 +37,4 @@ The diagram includes planned components. The frontend owns interactions and serv
 
 ## Remaining work
 
-Readiness requires migration 0003 and the JWT secret. Persistent failure logs, business UI, retrieval, worker, and deployment remain unimplemented. Compose currently runs only the database, not the complete application.
+Readiness requires migration 0003 and the JWT secret. Persistent failure logs, full business write UI, retrieval, worker, and deployment remain unimplemented. Compose currently runs only the database, not the complete application.
