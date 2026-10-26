@@ -1,12 +1,12 @@
-# S09: Typed frontend and read-only business pages
+# S09-S10: Typed read-only pages and query lifecycle
 
-Date: 2026-10-27 (Australia/Perth). [Verification evidence](evidence/2026-10-27-frontend-foundation.md).
+Date: 2026-10-27 (Australia/Perth). [S09 evidence](evidence/2026-10-27-frontend-foundation.md); [S10 cache policy/evidence](query-cache.md).
 
 ## Scope
 
 Implemented: email/password login, current identity, role-scoped ticket list, basic cursor next/previous navigation, ticket details, public/internal conversation, staff activity, explicit loading/empty/error/success views, refresh, sign-out, and expired-session handling. UI copy and source comments are English; timestamps explicitly use Perth (UTC+8).
 
-This stage reads existing ticket APIs. Ticket creation/assignment/replies/state forms, knowledge/AI controls, manager audit UI, filters, TanStack Query caching, and the complete component/E2E suite are later milestones. No mock data is displayed as real application data.
+This stage reads existing ticket APIs. Ticket creation/assignment/replies/state forms, knowledge/AI controls, manager audit UI, the complete component/E2E suite remain later milestones. S10 adds search/status/priority filters, session-scoped TanStack caching, and retained pagination; see query-cache.md. No mock data is displayed as real application data.
 
 ## Run against the development database
 
@@ -34,11 +34,11 @@ On Windows, stop Vite before npm ci: its loaded native binding can prevent npm f
 
 - Tokens live only in React memory; no localStorage, sessionStorage, cookies, or URL token persistence. Refreshing/closing the document loses the session. Sign-out removes client state; it is not server-side token revocation.
 - Login gets a token, then /me establishes identity/role. Session deadlines use the login-request start and server TTL; a timer and any protected401 return to login. Server checks remain authoritative, including disabling/reassignment after login. Refresh/session renewal are not implemented.
-- Each sign-in mounts a new workspace, even for the same account. Sign-out, expiry, account changes, route changes, and retries cancel superseded fetches; active-effect guards reject late results. A changed request key renders loading rather than a previous ticket.
+- Each sign-in mounts a new workspace, even for the same account. Sign-out, expiry, account changes, route changes, and retries cancel superseded fetches; query cancellation and session-owned clients reject late results. A changed request key renders loading rather than a previous ticket.
 - Requests have a 15-second deadline, omit ambient cookies, disable cache, and reject redirects. Unknown proxy/server error bodies are not reflected. Error cards show safe messages and validated UUID request IDs when available; network/proxy failures may have no API request ID.
 - Explicit TypeScript DTOs have runtime field validation. Unknown fields are discarded. A requester projection drops internal messages/events as display defense; server role/object authorization remains mandatory and independently tested.
 - Ticket text is rendered as React text, never injected HTML. Staff activity shows event metadata without copying arbitrary change objects. The current API returns participant/assignee IDs rather than a user directory. Staff views use those identifiers; requester views say Support team or Awaiting assignment instead of exposing personnel identifiers. The UI does not invent personal names.
-- Hash routes support list/detail/back navigation without a routing dependency. Basic paging is uncached; returning from details starts the list at page 1. S10 adds query keys, filter state, cache invalidation, and richer pagination behavior.
+- Hash routes support list/detail/back navigation without a routing dependency. Basic paging is uncached; returning from details starts the list at page 1. S10 query/cache behavior is documented in query-cache.md.
 
 ## Repeatable browser fixture server
 
@@ -68,8 +68,9 @@ Ctrl+C removes only the internally generated owned schema; this cleanup was veri
 npm ci
 npm run build
 npm run test:api
+npm run test:query
 ```
 
-The dependency-free Node API suite checks credentials/URL boundaries, DTO validation, requester projection, error redaction/status/request IDs, cursor encoding, cancellation, timeouts, and network failure. CI is configured to run it, but a configuration edit is not remote CI verification. There are no dependency/version changes in S09; lockfiles remain unchanged.
+The dependency-free Node API suite checks credentials/URL boundaries, DTO validation, requester projection, error redaction/status/request IDs, cursor encoding, cancellation, timeouts, and network failure. CI is configured to run it, but a configuration edit is not remote CI verification. There were no dependency changes in S09. S10 pins @tanstack/react-query 5.105.0 and updates package-lock.json; its10 query tests use real QueryClient/QueryObserver behavior.
 
 Actual browser checks are recorded separately from unit tests. S12 still owns a persisted Playwright/RTL regression suite and broad browser coverage. Desktop-wide, cross-browser, full keyboard/screen-reader, and WCAG conformance are not claimed from the narrow-view smoke check.

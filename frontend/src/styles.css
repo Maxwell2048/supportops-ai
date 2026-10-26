@@ -907,3 +907,40 @@ dd {
     transition: none !important;
   }
 }
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+  margin-bottom: 24px;
+  padding: 18px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+.filter-bar label {
+  margin: 0 0 7px;
+  font-size: 0.72rem;
+}
+.filter-bar .search-field {
+  flex: 1 1 230px;
+}
+.filter-bar select {
+  font: inherit;
+  min-height: 45px;
+  padding: 8px 12px;
+  border: 1px solid #c8d4cb;
+  border-radius: 6px;
+  background: white;
+  color: #243a37;
+  max-width: 100%;
+}
+@media (max-width: 750px) {
+  .filter-bar > div {
+    flex: 1 1 130px;
+  }
+  .filter-bar select {
+    width: 100%;
+  }
+}

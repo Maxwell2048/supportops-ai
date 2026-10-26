@@ -32,4 +32,4 @@ Missing/invalid/expired sessions return 401; a prohibited role-level feature ret
 
 S06 implements password hashing, JWTs, and read scopes; see [authentication](auth.md). Each request checks current active/role and ownership in the database. Requester responses exclude internal messages/events; events require staff role and object access. S07 verifies write authorization; S08 verifies manager-only audit queries. Knowledge, AI jobs, and management metrics remain planned.
 
-The S09 frontend stores JWTs in memory and unmounts private page state on logout/user changes. Login and read-only ticket views are locally verified; shared caching follows in S10. Hidden buttons are not authorization.
+The S09 frontend stores JWTs in memory and unmounts private page state on logout/user changes. Login and read-only ticket views are locally verified; S10 caches are session-owned, cleared at session boundaries, and revalidated on navigation/focus/reconnect. Hidden buttons are not authorization.

@@ -1,6 +1,6 @@
 # S07: Ticket writes and pagination
 
-S07 passed 155 tests; [historical evidence](evidence/2026-10-21-ticket-workflow.md). S08 adds [transactional audit](audit.md), reaching 173 tests. S09 read-only business pages are verified; write forms and cache refinements remain later M2 work. See [frontend guide](frontend.md).
+S07 passed 155 tests; [historical evidence](evidence/2026-10-21-ticket-workflow.md). S08 adds [transactional audit](audit.md), reaching 173 tests. S09 read-only business pages are verified; S10 cache/filter/paging behavior is verified, while write forms remain S11 work. See [frontend guide](frontend.md).
 
 ## Endpoints
 
