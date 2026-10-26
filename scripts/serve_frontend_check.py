@@ -37,6 +37,8 @@ PASSWORD = 'S09-local-synthetic-only!'
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--read-delay-ms', type=int, default=0, choices=range(0, 2001), metavar='0..2000')
+    parser.add_argument('--extra-tickets', type=int, default=0, choices=range(0, 101), metavar='0..100')
+    parser.add_argument('--session-minutes', type=int, default=1, choices=range(1, 31), metavar='1..30')
     args = parser.parse_args()
     configured = load_settings().database_url
     if not configured:
@@ -72,10 +74,14 @@ def main():
             add_message(session, synthetic_id('agent-a'), ticket.id, MessageCreate(expected_version=2, visibility='internal', body='Internal-only S09 diagnostic note: check the synthetic account flag.'), 'fixture-internal')
             add_message(session, synthetic_id('agent-a'), ticket.id, MessageCreate(expected_version=3, visibility='public', body='Public update: we are reviewing the sample access issue.'), 'fixture-public')
             create_ticket(session, synthetic_id('requester-b'), TicketCreate(title='[S09 browser] A separate private request', body='Only requester-b and the manager may view this synthetic request.'), 'fixture-private')
+            for index in range(args.extra_tickets):
+                created_ticket = create_ticket(session, synthetic_id('requester-a'), TicketCreate(title=f'[S10 browser] Pagination sample {index:02d}', body='Synthetic pagination and filtering fixture.'), f'fixture-page-{index}')
+                if index % 2:
+                    patch_ticket(session, synthetic_id('manager'), created_ticket.body['id'], TicketPatch(expected_version=1, priority='high'), f'fixture-priority-{index}')
         print('S09 isolated fixture API: http://127.0.0.1:8765', flush=True)
         print('Synthetic accounts: requester-a, requester-b, agent-a, agent-b, manager @example.invalid', flush=True)
         print('Use the public test-only password documented in this script; no local credentials are printed.', flush=True)
-        app = create_app(Settings(jwt_secret='S09-test-only-signing-secret-' * 3, access_token_minutes=1), engine=engine)
+        app = create_app(Settings(jwt_secret='S09-test-only-signing-secret-' * 3, access_token_minutes=args.session_minutes), engine=engine)
         if args.read_delay_ms:
             @app.middleware('http')
             async def delayed_reads(request, call_next):
@@ -83,7 +89,7 @@ def main():
                 if request.method == 'GET' and request.url.path.startswith('/api/tickets'):
                     await asyncio.sleep(args.read_delay_ms / 1000)
                 return response
-        print('Fixture sessions last one minute; normal application configuration is unchanged.', flush=True)
+        print(f'Fixture sessions last {args.session_minutes} minute(s); normal application configuration is unchanged.', flush=True)
         uvicorn.run(app, host='127.0.0.1', port=8765, proxy_headers=False, access_log=False)
     finally:
         if engine is not None:

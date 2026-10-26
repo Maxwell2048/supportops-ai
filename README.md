@@ -2,7 +2,7 @@
 
 An AI-assisted ticket and knowledge collaboration platform for a fictional software support team. This portfolio project demonstrates full-stack development, authorization, data consistency, AI evaluation, and eventual Azure delivery.
 
-**Current stage: M2. S05-S08 backend and S09 typed login/ticket pages are locally verified. Next: S10 query caching and filters. Write forms, AI, and cloud deployment remain planned.**
+**Current stage: M2. S05-S08 backend and S09-S10 typed ticket pages, session-scoped caching, filters, and pagination are locally verified. Next: S11 business forms. Write forms, AI, and cloud deployment remain planned.**
 
 The original requirements are preserved in an English translation of the [project brief](docs/planning/project-brief.md). Its planning-only statements describe the archived starting point. The current local repository is `D:\SupportOps AI`.
 
@@ -11,7 +11,7 @@ The original requirements are preserved in an English translation of the [projec
 - Git repository on `main`: [Maxwell2048/supportops-ai](https://github.com/Maxwell2048/supportops-ai). Cloud resources and deployment remain planned.
 - FastAPI `/health` for process liveness and `/ready` for database connectivity, migration version, and authentication configuration; unavailable dependencies return 503.
 - React/TypeScript/Vite login, role-scoped ticket list/details, public/internal conversation, staff activity, and loading/empty/error/success views; see [frontend guide](docs/frontend.md).
-- Exact dependency versions, `uv.lock`, and `package-lock.json`.
+- Exact dependency versions, `uv.lock`, and `package-lock.json`; TanStack React Query 5.105.0 provides per-session cache lifecycle and current-access revalidation.
 - GitHub Actions configuration for PostgreSQL backend tests, frontend build, and API-client tests. Remote CI results have not been verified.
 - PostgreSQL 17.11 development container, image digest and loopback port pinned; persistence across stop/start verified.
 - Four foundational business tables plus idempotency and audit tables, Alembic migrations, synthetic seed data, and real database integration tests.
@@ -56,9 +56,10 @@ uv run --locked python ../scripts/test_backend.py -q
 npm ci
 npm run build
 npm run test:api
+npm run test:query
 ```
 
-The S08 acceptance run passed **173 backend tests with zero skips**; see [audit evidence](docs/evidence/2026-10-22-audit-verification.md). Frontend clean installation and production build passed. The English conversion has its own [verification record](docs/evidence/2026-10-22-english-repository.md). The test helper loads local configuration and prepares a dedicated test database. Running pytest without `TEST_DATABASE_URL` explicitly skips integration tests; skips do not count as database verification. S09 separately passed 173 backend tests, 17 API-client tests, clean install/build, and real browser role/session/error checks; see [frontend evidence](docs/evidence/2026-10-27-frontend-foundation.md). The full component/E2E suite remains S12 work.
+The S08 acceptance run passed **173 backend tests with zero skips**; see [audit evidence](docs/evidence/2026-10-22-audit-verification.md). Frontend clean installation and production build passed. The English conversion has its own [verification record](docs/evidence/2026-10-22-english-repository.md). The test helper loads local configuration and prepares a dedicated test database. Running pytest without `TEST_DATABASE_URL` explicitly skips integration tests; skips do not count as database verification. S09 separately passed 173 backend tests, 17 API-client tests, clean install/build, and real browser role/session/error checks; see [frontend evidence](docs/evidence/2026-10-27-frontend-foundation.md). S10 additionally passed 10 query tests, clean install/build, and real multi-page/filter/cache-revalidation browser checks: [S10 evidence](docs/evidence/2026-10-27-query-cache.md). The full component/E2E suite remains S12 work.
 
 ## Database and migrations
 
@@ -86,7 +87,7 @@ The helper checks the engine first and starts Docker Desktop through Windows Exp
 |---|---|---|
 | M0 | Permissions, states, ER model, API, data modes | Drafted; consistency review pending |
 | M1 | Database, authentication, three-role ticket API, audit | S05-S08 locally verified; remote CI/cloud later |
-| M2 | React business pages, caching, component tests, E2E | S09 locally verified; S10-S12 planned |
+| M2 | React business pages, caching, component tests, E2E | S09-S10 locally verified; S11-S12 planned |
 | M3 | Knowledge versions, retrieval, AI jobs, citations, human review | Planned |
 | M4 | SQL/AI evaluation, Compose, recovery, complete CI | Planned |
 | M5 | Azure, IaC, observability, release rollback, portfolio evidence | Planned |
@@ -107,6 +108,7 @@ Tasks, dependencies, acceptance, and next steps live in [progress](docs/progress
 - [Ticket transactions, idempotency, pagination](docs/tickets.md)
 - [Transactional audit and tracing](docs/audit.md)
 - [Frontend sessions, pages, proxy, and browser fixtures](docs/frontend.md)
+- [Query cache, filters, and pagination policy](docs/query-cache.md)
 - [GitHub setup and commit policy](docs/git-workflow.md)
 - [Foundation decision](docs/adr/0001-foundation-and-scope.md)
 

@@ -6,6 +6,7 @@ import {
   parseUser,
 } from "./contracts.ts";
 import type { Role } from "./contracts.ts";
+import type { TicketFilters } from "../state/ticketState.ts";
 
 export class ApiError extends Error {
   readonly status: number;
@@ -150,9 +151,14 @@ export function createApi(fetcher: typeof fetch = fetch, timeoutMs = 15000) {
       }),
     me: (token: string, signal?: AbortSignal) =>
       request("/me", parseUser, { token, signal }),
-    tickets: (token: string, cursor: string | null, signal?: AbortSignal) =>
+    tickets: (
+      token: string,
+      cursor: string | null,
+      signal?: AbortSignal,
+      filters: Partial<TicketFilters> = {},
+    ) =>
       request(
-        `/tickets?${new URLSearchParams({ limit: "20", ...(cursor ? { cursor } : {}) })}`,
+        `/tickets?${new URLSearchParams({ limit: "20", ...(cursor ? { cursor } : {}), ...(filters.q?.trim() ? { q: filters.q.trim() } : {}), ...(filters.status ? { status: filters.status } : {}), ...(filters.priority ? { priority: filters.priority } : {}) })}`,
         parsePage,
         { token, signal },
       ),

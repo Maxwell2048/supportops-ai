@@ -1,0 +1,16 @@
+feat(frontend): add session-scoped query caching and ticket filters
+
+I introduced TanStack React Query 5.105.0 with a pinned lockfile and replaced the custom request hook. Each login owns its cache, and keys bind the session, account, role, resource, filters, cursor, and page size without storing bearer tokens in keys.
+
+Important changes and reasons:
+- Clear caches and cancel requests at session boundaries; reject late results from old logins. Keep cached private data hidden during revalidation or after errors, including failed background refetches.
+- Revalidate on mount/focus/reconnect and remount list observers per filter/cursor identity so returning to a cached page still checks current server authorization. Use explicit freshness/retention values and no automatic retries, without claiming offline authorization or unmeasured speedups.
+- Add server-backed title/body search, status/priority filters, normalized hash URLs, cursor resets, preserved detail-return pagination, and recovery from invalid cursors. Keep internal notes out of search.
+- Invalidate current-session ticket lists/details together on refresh, establishing the helper for later successful write forms.
+- Add 10 tests using real QueryClient/QueryObserver behavior and wire them into CI. Extend the isolated real-PostgreSQL browser fixture with extra tickets and configurable synthetic-session duration.
+
+Validation: 173 backend tests passed with zero skips;17 API-client tests and 10 query tests passed; clean install/build passed. Actual browser checks covered 20+5 pagination, preserved detail-return state, 12 matching high-priority results, no-match filters, account switching, delayed logout, account-revocation401, cached-page navigation revalidation, and failed-refresh502 without old rows. Early Node test-process retention was fixed by unreferencing only test-harness Query timers; no force exit was used. Exact results and screenshots: docs/evidence/2026-10-27-query-cache.md.
+
+Limitations: no complete component/E2E/browser-matrix acceptance, optimistic writes, production deployment, AI, or verified remote CI. Browser refresh still discards the memory-only session/pager. The backend schema is unchanged. Next: S11 business forms, duplicate submissions, conflict input preservation, keyboard behavior, and narrow-screen refinement.
+
+Implementation and verification used AI assistance; this first-person maintenance record does not claim independent handwritten code or production experience.

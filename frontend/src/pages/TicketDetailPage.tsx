@@ -1,5 +1,9 @@
-import { useCallback } from "react";
-import { api } from "../api/client.ts";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  detailOptions,
+  invalidateTickets,
+  queryView,
+} from "../state/queries.ts";
 import type { Session } from "../App.tsx";
 import { Empty, ErrorPanel, Loading } from "../components/Feedback.tsx";
 import {
@@ -8,30 +12,29 @@ import {
   Status,
   Time,
 } from "../components/TicketMeta.tsx";
-import { useRemote } from "../hooks/useRemote.ts";
 
 export function TicketDetailPage({
   id,
   session,
-  onExpired,
+  backHref,
 }: {
   id: string;
   session: Session;
-  onExpired: () => void;
+  backHref: string;
 }) {
-  const load = useCallback(
-    (signal: AbortSignal) =>
-      api.ticket(id, session.token, session.user.role, signal),
-    [id, session.token, session.user.role],
-  );
-  const { state, reload } = useRemote(id, load, onExpired);
+  const client = useQueryClient();
+  const query = useQuery(detailOptions(session, id));
+  const state = queryView(query);
+  const reload = () => {
+    void invalidateTickets(client, session);
+  };
   if (state.status === "loading") return <Loading label="Loading ticket" />;
   if (state.status === "error")
     return <ErrorPanel error={state.error} retry={reload} />;
   const ticket = state.data;
   return (
     <>
-      <a className="back-link" href="#/tickets">
+      <a className="back-link" href={backHref}>
         ← Back to tickets
       </a>
       <header className="page-heading detail-heading">

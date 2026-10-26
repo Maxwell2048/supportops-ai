@@ -1,7 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { User } from "./api/contracts.ts";
-import { isUuid } from "./api/contracts.ts";
-import { ApiError } from "./api/client.ts";
+import { QueryClientProvider } from "@tanstack/react-query";
+import type { QueryClient } from "@tanstack/react-query";
+import { createSessionClient } from "./state/queries.ts";
+import {
+  emptyFilters,
+  filterKey,
+  listHref,
+  routeFromHash,
+} from "./state/ticketState.ts";
 import { ErrorPanel } from "./components/Feedback.tsx";
 import { LoginPage } from "./pages/LoginPage.tsx";
 import { TicketListPage } from "./pages/TicketListPage.tsx";
@@ -13,30 +20,37 @@ export interface Session {
   user: User;
   expiresAt: number;
 }
-function routeFromHash() {
-  const path = window.location.hash.slice(1) || "/tickets";
-  if (path === "/tickets" || path === "/") return { kind: "list" as const };
-  const match = /^\/tickets\/([^/]+)$/.exec(path);
-  if (match && isUuid(match[1]))
-    return { kind: "detail" as const, id: match[1] };
-  return { kind: "missing" as const };
-}
 function Workspace({
   session,
   onSignOut,
-  onExpired,
 }: {
   session: Session;
   onSignOut: () => void;
-  onExpired: () => void;
 }) {
-  const [route, setRoute] = useState(routeFromHash);
+  const [route, setRoute] = useState(() => routeFromHash(window.location.hash));
+  const lastList = useRef(listHref(emptyFilters));
+  const [paging, setPaging] = useState({
+    scope: filterKey(emptyFilters),
+    cursors: [null] as (string | null)[],
+  });
+  const backHref =
+    route.kind === "list" ? listHref(route.filters) : lastList.current;
+  const scope = route.kind === "list" ? filterKey(route.filters) : paging.scope;
+  const cursors = paging.scope === scope ? paging.cursors : [null];
+  useEffect(() => {
+    if (route.kind === "list") {
+      lastList.current = listHref(route.filters);
+      setPaging((value) =>
+        value.scope === scope ? value : { scope, cursors: [null] },
+      );
+    }
+  }, [route, scope]);
   const routeKey = route.kind === "detail" ? route.id : route.kind;
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [routeKey]);
   useEffect(() => {
-    const change = () => setRoute(routeFromHash());
+    const change = () => setRoute(routeFromHash(window.location.hash));
     window.addEventListener("hashchange", change);
     return () => window.removeEventListener("hashchange", change);
   }, []);
@@ -53,7 +67,7 @@ function Workspace({
         Skip to content
       </a>
       <aside className="sidebar">
-        <a className="brand" href="#/tickets">
+        <a className="brand" href={backHref}>
           <span className="brand-mark" aria-hidden="true">
             S
           </span>
@@ -63,7 +77,7 @@ function Workspace({
         <nav aria-label="Main navigation">
           <a
             className="nav-link active"
-            href="#/tickets"
+            href={backHref}
             aria-current={route.kind === "list" ? "page" : undefined}
           >
             <span aria-hidden="true">▤</span>Tickets
@@ -105,24 +119,29 @@ function Workspace({
         </header>
         <main id="workspace-main" tabIndex={-1} className="page-content">
           {route.kind === "list" ? (
-            <TicketListPage session={session} onExpired={onExpired} />
+            <TicketListPage
+              key={JSON.stringify([
+                filterKey(route.filters),
+                cursors[cursors.length - 1],
+              ])}
+              session={session}
+              filters={route.filters}
+              cursors={cursors}
+              onPage={(next) => setPaging({ scope, cursors: next })}
+              onFilters={(filters) => {
+                setPaging({ scope: filterKey(filters), cursors: [null] });
+                window.location.hash = listHref(filters).slice(1);
+              }}
+            />
           ) : route.kind === "detail" ? (
             <TicketDetailPage
               key={route.id}
               id={route.id}
               session={session}
-              onExpired={onExpired}
+              backHref={backHref}
             />
           ) : (
-            <ErrorPanel
-              error={
-                new ApiError(
-                  404,
-                  "not_found",
-                  "This page address is not available. Return to your tickets.",
-                )
-              }
-            />
+            <ErrorPanel error={route.error} />
           )}
         </main>
         <footer className="workspace-footer">
@@ -136,7 +155,16 @@ function Workspace({
 export function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [notice, setNotice] = useState("");
+  const cache = useRef<QueryClient | null>(null);
+  useEffect(
+    () => () => {
+      cache.current?.clear();
+    },
+    [],
+  );
   const expired = useCallback(() => {
+    cache.current?.clear();
+    cache.current = null;
     setSession(null);
     setNotice("Your session has expired. Please sign in again.");
   }, []);
@@ -153,22 +181,23 @@ export function App() {
       expired();
       return;
     }
+    cache.current?.clear();
+    cache.current = createSessionClient(expired);
     setNotice("");
     setSession(value);
   }
   function signOut() {
+    cache.current?.clear();
+    cache.current = null;
     setSession(null);
     setNotice("You have signed out.");
     window.location.hash = "/tickets";
   }
   // Unmount all private state between sessions, including same-user sign-ins.
   return session ? (
-    <Workspace
-      key={session.key}
-      session={session}
-      onSignOut={signOut}
-      onExpired={expired}
-    />
+    <QueryClientProvider client={cache.current!}>
+      <Workspace key={session.key} session={session} onSignOut={signOut} />
+    </QueryClientProvider>
   ) : (
     <LoginPage notice={notice} onSignIn={signIn} />
   );
