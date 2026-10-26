@@ -9,7 +9,7 @@ S06 was locally verified with 73 tests; [evidence](evidence/2026-10-21-auth-veri
 | GET /api/tickets/{id} | Requester owns / agent currently assigned / manager all |
 | GET /api/tickets/{id}/events | Authorized agent/manager; requester 403 |
 
-Requester details query only public messages and omit events entirely. S07 writes recheck permissions transactionally. Login UI, registration, role editing, refresh tokens, and OIDC are not implemented.
+Requester details query only public messages and omit events entirely. S07 writes recheck permissions transactionally. S09 provides [login and ticket views](frontend.md). Registration, role editing, refresh tokens, and OIDC are not implemented.
 
 ## First local setup
 
@@ -40,7 +40,7 @@ The five demo accounts use DEMO_PASSWORD from ignored .env for fictional local d
 - Require/validate sub,jti,iss,aud,iat,nbf,exp; sub must be UUID; do not select algorithms from untrusted headers. Tokens contain no password, email, or role.
 - Every protected request reloads active, role, and ownership. Disabling, role changes, and reassignment affect subsequent requests.
 - Unknown email, incorrect password, and inactive account share a generic 401. Dummy password verification reduces obvious fast-path differences; this is not a constant-time claim.
-- Future clients keep tokens in memory and reauthenticate after expiry. Clearing a token client-side does not revoke it server-side. There is no refresh/per-token revocation list; disabling accounts or rotating signing secrets invalidates relevant access.
+- The S09 client keeps tokens in memory and reauthenticates after expiry. Clearing a token client-side does not revoke it server-side. There is no refresh/per-token revocation list; disabling accounts or rotating signing secrets invalidates relevant access.
 - JWT signing does not encrypt contents. External TLS and cloud identity are later work.
 
 ## Errors and throttling

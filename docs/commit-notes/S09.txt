@@ -1,0 +1,17 @@
+feat(frontend): add typed login and role-scoped ticket views
+
+I replaced the static scaffold with a read-only support workspace: login, current identity, ticket lists/details, public conversation, staff-only notes/activity, refresh, and basic cursor navigation. The pages distinguish loading, empty, failed, and successful requests and label times in Perth (UTC+8).
+
+Important changes and reasons:
+- Add TypeScript DTOs and runtime response validation so malformed responses cannot silently become application state. Discard unknown fields and defensively project requester data without internal notes/events; server authorization remains the security boundary.
+- Keep JWTs only in memory, obtain identity through /me, and clear private state on logout/expiry/protected401. Mount each session separately, cancel superseded requests, and ignore late results to prevent cross-account/ticket display races.
+- Use same-origin /api requests with a deadline, no ambient cookies/cache, and rejected redirects. Show safe messages and validated request IDs rather than reflecting arbitrary proxy/server bodies or credentials.
+- Render ticket/message text as text, add responsive layouts, and make the development API target configurable without exposing server secrets in the bundle. Keep write forms, AI controls, filters, and shared caching in later milestones.
+- Add a reproducible browser fixture server using actual migrations/API/authorization and isolated real PostgreSQL with disposable public test credentials. It cleans only its owned random schema on normal exit.
+- Add 17 dependency-free Node protocol tests and configure CI to run them. Update the repository language guard to skip non-text binary screenshot evidence while still checking UTF-8 prose and filenames.
+
+Validation: 173 backend tests passed with zero skips;17 API-client tests passed; npm ci and production build passed. Real browser checks covered five synthetic accounts, field/object isolation, empty states, wrong-password401, direct-object404, delayed logout/account-switch races, refresh loss, one-minute expiry, server-side account revocation401, safe HTML rendering, and backend-unavailable502. Test schemas were cleaned and temporary services stopped. A Windows native-binding file-lock failure during npm ci was resolved by stopping Vite before the successful rerun. Exact results/screenshots are in docs/evidence/2026-10-27-frontend-foundation.md.
+
+Limitations: no complete RTL/Playwright suite, desktop-wide/cross-browser or WCAG claim, shared query cache/filters, write forms, production proxy/deployment, AI, or remote CI acceptance. No new dependencies or migration changes. Next: S10 TanStack Query, filter/pagination state, and cache/user invalidation.
+
+I used AI assistance for implementation and verification; this maintenance record does not claim independently handwritten code or production experience.

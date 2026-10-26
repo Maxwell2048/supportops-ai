@@ -9,4 +9,4 @@
 
 Authentication answers who you are. Authorization decides whether this specific operation is allowed. A valid token does not let a requester read another person's ticket.
 
-S06 passed 73 tests at that stage; see [evidence](../evidence/2026-10-21-auth-verification.md). S07 added writes, transitions, and idempotency (155 tests). S08 added transactional audit (173 tests). The login frontend remains planned. See [ticket behavior](../tickets.md).
+S06 passed 73 tests at that stage; see [evidence](../evidence/2026-10-21-auth-verification.md). S07 added writes, transitions, and idempotency (155 tests). S08 added transactional audit (173 tests). S09 now adds memory-only login and scoped read views; see [frontend guide](../frontend.md). See [ticket behavior](../tickets.md).
