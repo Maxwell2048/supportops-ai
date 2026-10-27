@@ -2,7 +2,7 @@ from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 
 
-SCHEMA_REVISION = "0003_audit_events"
+SCHEMA_REVISION = "0004_knowledge_versions"
 
 
 def make_engine(database_url: str) -> Engine:

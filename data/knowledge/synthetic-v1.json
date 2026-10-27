@@ -1,0 +1,38 @@
+[
+  {
+    "key": "sample-access-checklist",
+    "title": "Sample account access checklist",
+    "body": "For the fictional sample product, confirm that the requester is using the expected synthetic account. Ask them to repeat the documented sign-in steps. Never request their password or a real authentication token. If the synthetic account remains unavailable, record the observed result for authorized support staff.",
+    "scope": "support",
+    "source_kind": "synthetic",
+    "source_reference": "supportops.synthetic/knowledge/sample-access-checklist/v1",
+    "license_note": "Original synthetic project fixture; no external or private source data."
+  },
+  {
+    "key": "sample-diagnostic-context",
+    "title": "Collecting safe synthetic diagnostic context",
+    "body": "Record the sample product version, the expected synthetic behavior, the observed behavior, and reproducible steps. Use fabricated identifiers. Put staff-only investigation notes in an internal message and share a separate public progress update with the requester.",
+    "scope": "support",
+    "source_kind": "synthetic",
+    "source_reference": "supportops.synthetic/knowledge/sample-diagnostic-context/v1",
+    "license_note": "Original synthetic project fixture; no external or private source data."
+  },
+  {
+    "key": "sample-resolution-followup",
+    "title": "Verifying a synthetic resolution",
+    "body": "Before resolving a fictional ticket, describe the synthetic change and the verification steps in a public reply. If the requester reports that the problem still occurs, keep their public reopening reason and review the existing assignment. A reply alone does not automatically change ticket status.",
+    "scope": "support",
+    "source_kind": "synthetic",
+    "source_reference": "supportops.synthetic/knowledge/sample-resolution-followup/v1",
+    "license_note": "Original synthetic project fixture; no external or private source data."
+  },
+  {
+    "key": "sample-manager-review",
+    "title": "Fictional manager publication review",
+    "body": "Managers review scope and provenance before publishing synthetic knowledge. Management-only planning notes must not enter an agent's retrieval context. Archiving removes current availability while preserving immutable history for authorized review. A changed publication requires a new review of historical-source access.",
+    "scope": "management",
+    "source_kind": "synthetic",
+    "source_reference": "supportops.synthetic/knowledge/sample-manager-review/v1",
+    "license_note": "Original synthetic project fixture; no external or private source data."
+  }
+]

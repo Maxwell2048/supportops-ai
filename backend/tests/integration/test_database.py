@@ -33,7 +33,7 @@ def test_migration_roundtrip_in_isolated_test_schema(pg_engine):
         assert compare_metadata(MigrationContext.configure(connection), Base.metadata) == []
 
 
-@pytest.mark.parametrize('previous', ['0001_ticket_foundation', '0002_ticket_idempotency'])
+@pytest.mark.parametrize('previous', ['0001_ticket_foundation', '0002_ticket_idempotency', '0003_audit_events'])
 def test_upgrade_from_previous_revision_preserves_existing_seed_records(pg_engine, previous):
     with pg_engine.connect() as connection:
         outer = connection.begin()

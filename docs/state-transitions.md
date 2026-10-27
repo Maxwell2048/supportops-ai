@@ -26,10 +26,15 @@ queued -> running -> succeeded / failed. An expired running lease returns to que
 
 Retry temporary timeouts/service failures with backoff; revoked permissions, invalid configuration, and invalid citations are permanent failures. Missing evidence can be a successful handoff result and must not conceal provider failure. Timeout, lease, and backoff parameters are fixed and verified in S16.
 
-## Review and knowledge (planned)
+## Review (planned)
 
 - Suggestions: pending -> accepted / edited / rejected; terminal decisions cannot change again.
 - Accepted/edited creates exactly one public message and updates reviewer, ticket version, and audit atomically. Rejected creates no public message. Evidence-free results may only be rejected; humans reply independently.
 - Closed/archived tickets cannot publish suggestions. Changed ticket or knowledge content requires reanalysis: 409/stale_suggestion.
-- Knowledge versions: draft -> published -> archived. Published content is immutable; edits create a new draft. Publishing atomically archives the old published version while preserving citation snapshots.
-- Historical snapshots still require current permissions; publication requires sources to remain currently published and visible.
+
+## Knowledge (S13 locally verified)
+
+- Every save creates an immutable draft snapshot. Publishing selects one current version; superseded publications derive archived status without updating their stored content. Archiving the article removes current availability. Explicit manager publication may restore a historical snapshot.
+- Article revision changes for each effective draft/publication/archive operation, independently of version numbers. Current revision and persistent idempotency protect writes; knowledge audit shares the transaction.
+- Requesters cannot access knowledge. Historical agent reads require previous publication plus support scope on both the historical and current publication, and an active article. Draft/management/archived-article references are denied. Only the current pointer is eligible for future retrieval. [Full policy](knowledge.md).
+- Future suggestion publication must also recheck that cited sources remain currently published and authorized; that review workflow remains S18/S19.

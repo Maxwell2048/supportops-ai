@@ -2,6 +2,8 @@
 
 Date: 2026-10-22 (Australia/Perth). Migration: 0003_audit_events. [Execution evidence](evidence/2026-10-22-audit-verification.md).
 
+S13 adds a separate FK-backed immutable knowledge audit stream in0004, queried at /api/knowledge/articles/{id}/events. The ticket-only table/endpoint described here remains intact; see [knowledge transaction policy](knowledge.md). This avoids inserting article IDs into a ticket resource FK.
+
 ## Why this follows ticket writes
 
 S07 makes ticket changes correct. S08 identifies who changed what through which request. Establishing the transaction/tracing contract before business pages gives them reliable outcomes, and future human AI review can reuse it.

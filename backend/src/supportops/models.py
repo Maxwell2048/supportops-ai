@@ -1,9 +1,9 @@
-"""M1 schema. Authorization and state changes are enforced by application services."""
+"""Persistent business schema; application services enforce current role/object authorization."""
 
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, func, text
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, ForeignKeyConstraint, Index, Integer, String, Text, UniqueConstraint, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -128,5 +128,70 @@ class AuditEvent(Base):
     result: Mapped[str] = mapped_column(String(16), server_default="success")
     request_id: Mapped[UUID] = mapped_column()
     ticket_version: Mapped[int] = mapped_column(Integer)
+    changes: Mapped[dict] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class KnowledgeArticle(Base):
+    __tablename__ = "knowledge_articles"
+    __table_args__ = (
+        CheckConstraint("revision > 0 AND latest_version_number > 0 AND revision >= latest_version_number", name="ck_knowledge_revision"),
+        CheckConstraint("NOT archived OR published_version_id IS NOT NULL", name="ck_knowledge_archive"),
+        ForeignKeyConstraint(["id", "published_version_id"], ["knowledge_versions.article_id", "knowledge_versions.id"], name="fk_knowledge_published_version", use_alter=True, ondelete="RESTRICT"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    created_by: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    revision: Mapped[int] = mapped_column(Integer, server_default="1")
+    latest_version_number: Mapped[int] = mapped_column(Integer, server_default="1")
+    published_version_id: Mapped[UUID | None] = mapped_column()
+    archived: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class KnowledgeVersion(Base):
+    __tablename__ = "knowledge_versions"
+    __table_args__ = (
+        UniqueConstraint("article_id", "number", name="uq_knowledge_version_number"),
+        UniqueConstraint("article_id", "id", name="uq_knowledge_article_version"),
+        CheckConstraint("number > 0", name="ck_knowledge_number"),
+        CheckConstraint("scope IN ('support','management')", name="ck_knowledge_scope"),
+        CheckConstraint("length(trim(title)) BETWEEN 1 AND 200 AND length(trim(body)) BETWEEN 1 AND 50000", name="ck_knowledge_content"),
+        CheckConstraint("source_kind IN ('synthetic','licensed') AND length(trim(source_reference)) BETWEEN 1 AND 2000 AND length(trim(license_note)) BETWEEN 1 AND 1000", name="ck_knowledge_source"),
+        CheckConstraint("content_hash ~ '^[0-9a-f]{64}$'", name="ck_knowledge_hash"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    article_id: Mapped[UUID] = mapped_column(ForeignKey("knowledge_articles.id", ondelete="RESTRICT"))
+    number: Mapped[int] = mapped_column(Integer)
+    title: Mapped[str] = mapped_column(String(200))
+    body: Mapped[str] = mapped_column(Text)
+    scope: Mapped[str] = mapped_column(String(20))
+    source_kind: Mapped[str] = mapped_column(String(16))
+    source_reference: Mapped[str] = mapped_column(Text)
+    license_note: Mapped[str] = mapped_column(Text)
+    content_hash: Mapped[str] = mapped_column(String(64))
+    created_by: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class KnowledgeEvent(Base):
+    __tablename__ = "knowledge_events"
+    __table_args__ = (
+        UniqueConstraint("article_id", "article_revision", name="uq_knowledge_event_revision"),
+        ForeignKeyConstraint(["article_id", "version_id"], ["knowledge_versions.article_id", "knowledge_versions.id"], name="fk_knowledge_event_version", ondelete="RESTRICT"),
+        CheckConstraint("article_revision > 0 AND actor_role = 'manager' AND result = 'success'", name="ck_knowledge_event_actor"),
+        CheckConstraint("action IN ('draft_created','published','archived')", name="ck_knowledge_event_action"),
+        Index("ix_knowledge_events_version_action", "version_id", "action"),
+        Index("ix_knowledge_events_request", "request_id"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    article_id: Mapped[UUID] = mapped_column(ForeignKey("knowledge_articles.id", ondelete="RESTRICT"))
+    version_id: Mapped[UUID] = mapped_column()
+    article_revision: Mapped[int] = mapped_column(Integer)
+    actor_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    actor_role: Mapped[str] = mapped_column(String(20), server_default="manager")
+    action: Mapped[str] = mapped_column(String(24))
+    result: Mapped[str] = mapped_column(String(16), server_default="success")
+    request_id: Mapped[UUID] = mapped_column()
     changes: Mapped[dict] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
