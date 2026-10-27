@@ -1,0 +1,16 @@
+test(frontend): add component and isolated three-role browser regression
+
+I made the S09-S11 workflows repeatable through rendered component tests and real PostgreSQL browser tests, while preserving the existing API/query/write and backend suites. I separated controlled UI failures from actual server authorization so each result has a clear evidential boundary.
+
+Important changes and reasons:
+- I pinned Vitest, jsdom, React Testing Library, user-event, jest-dom, DOM Testing Library, Playwright and Node types, updated package-lock.json and aligned the declared Node minimum with jsdom. I added a dedicated type-check configuration for tests and runner configurations.
+- I added 12 component regressions for native validation/focus, pending duplicate guards, exact-body/key recovery, draft/version review, unavailable selections, mutation401, failed-refresh content removal, password clearing, unmount cancellation and late old-account response isolation.
+- I added five Playwright scenarios repeated at desktop1280x800 and narrow390x844. They cover the three-role lifecycle, actual conflict review, public/internal isolation, former-agent and cross-requester404, lost successful acknowledgements, duplicate sends, empty/loading/error/success, pagination/filter/detail-return state and keyboard navigation.
+- I extracted the existing disposable fixture into a context manager and added a Python-owned API/schema runner. The npm E2E command starts its own loopback API while Playwright owns Vite/browser processes, refuses server reuse, propagates failure and closes its resources before dropping only the generated test schema. I verified cleanup for normal success and an intentionally invalid project selection.
+- I kept traces/videos off because traces can contain bearer headers, ignored generated reports and published only two reviewed synthetic screenshots. I configured CI to run the new checks with its own PostgreSQL service without claiming hosted CI execution passed.
+
+Validation: clean npm installation passed;177 real-PostgreSQL backend tests passed with zero skips;17 API,11 query and6 write tests passed;12 rendered-component tests passed; test-source type checking and production build passed. The final browser run passed10 tests in20.2 seconds with no automatic retries. All owned browser schemas were removed and no test-server listeners remained. The intentionally rejected project returned the expected exit1 and also cleaned up. Detailed commands, earlier observations and limitations are preserved in docs/evidence/2026-10-27-frontend-regression.md.
+
+Limitations: remote GitHub Actions/Linux, Firefox/WebKit, broad device/accessibility/screen-reader coverage and coverage percentages remain unverified. Component API doubles are not server authorization evidence; selected503 outcomes are explicit transport injections after/beside real API calls. Forced termination can bypass normal cleanup. This stage changes no business rules, database migrations or Python dependency versions. Knowledge and AI remain future stages; next is S13 immutable knowledge versions and authorized publication.
+
+Implementation and verification used AI assistance; this first-person maintenance record does not claim independent handwritten code or production experience.

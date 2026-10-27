@@ -24,7 +24,7 @@ GET /api/agents is manager-only, returns active agents ordered by email/id, and 
 
 ## Verification boundaries
 
-Backend tests exercise real PostgreSQL authorization/transactions. Node tests exercise typed write protocols, key reuse, public transition payloads, state choices and mutation expiry. Actual browser checks include keyboard submission, concurrent reply/assignment conflicts, unavailable targets, double clicks, lost acknowledgements, and a measured 390x844 assignment form. These checks do not establish a complete accessibility audit, cross-browser coverage or a persisted component/E2E suite; those remain S12.
+S11 backend tests exercise real PostgreSQL authorization/transactions. Node tests exercise typed write protocols, key reuse, public transition payloads, state choices and mutation expiry. S11 manual browser checks include keyboard submission, concurrent reply/assignment conflicts, unavailable targets, double clicks, lost acknowledgements and a measured390x844 assignment form. S12 subsequently adds persisted component/E2E regression: [new evidence](evidence/2026-10-27-frontend-regression.md). These checks do not establish a complete accessibility audit or cross-browser coverage.
 
 The isolated browser helper accepts --lose-first-write-response and --write-delay-ms 0..2000. The former replaces only the first successful HTTP ticket write response with a synthetic 503 after the real API has committed. These switches exist only in the disposable loopback test helper, never production configuration. The test transport does not generate a normal API request ID for its replacement response; the underlying API request log records its original successful status.
 
