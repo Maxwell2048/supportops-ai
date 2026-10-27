@@ -2,7 +2,7 @@
 
 An AI-assisted ticket and knowledge collaboration platform for a fictional software support team. This portfolio project demonstrates full-stack development, authorization, data consistency, AI evaluation, and eventual Azure delivery.
 
-**Current stage: M2. S05-S08 backend and S09-S10 typed ticket pages, session-scoped caching, filters, and pagination are locally verified. Next: S11 business forms. Write forms, AI, and cloud deployment remain planned.**
+**Current stage: M2. S05-S08 backend and S09-S11 ticket pages, caching, filters, and business forms are locally verified. Next: S12 component/E2E tests. AI and cloud deployment remain planned.**
 
 The original requirements are preserved in an English translation of the [project brief](docs/planning/project-brief.md). Its planning-only statements describe the archived starting point. The current local repository is `D:\SupportOps AI`.
 
@@ -18,6 +18,7 @@ The original requirements are preserved in an English translation of the [projec
 - Email/password login, short-lived JWTs, current identity, and server-authorized ticket details/events. Requester responses exclude internal messages and events.
 - Five explicitly activated synthetic demo accounts; credentials exist only in the ignored local `.env`. No public registration or role-editing API.
 - Ticket creation, authorized lists/filters/pagination, assignment, replies, status/archive changes, version conflicts, transactional events, persistent idempotency, manager audit queries, and redacted JSON request logs.
+- Role-scoped business forms, a manager-only active-agent directory, retained conflict drafts, duplicate-submit guards and same-request recovery after uncertain write results; see [form policy](docs/forms.md).
 - M0 permission, state, data model, API, and data policy drafts; S01-S27 milestone checklist.
 
 ## Run locally
@@ -57,11 +58,14 @@ npm ci
 npm run build
 npm run test:api
 npm run test:query
+npm run test:writes
 ```
 
 The S08 acceptance run passed **173 backend tests with zero skips**; see [audit evidence](docs/evidence/2026-10-22-audit-verification.md). Frontend clean installation and production build passed. The English conversion has its own [verification record](docs/evidence/2026-10-22-english-repository.md). The test helper loads local configuration and prepares a dedicated test database. Running pytest without `TEST_DATABASE_URL` explicitly skips integration tests; skips do not count as database verification. S09 separately passed 173 backend tests, 17 API-client tests, clean install/build, and real browser role/session/error checks; see [frontend evidence](docs/evidence/2026-10-27-frontend-foundation.md). S10 additionally passed 10 query tests, clean install/build, and real multi-page/filter/cache-revalidation browser checks: [S10 evidence](docs/evidence/2026-10-27-query-cache.md). The full component/E2E suite remains S12 work.
 
 ## Database and migrations
+
+S11 passed **177 backend tests with zero skips and 34 frontend tests**, plus clean installation/build and real browser write/conflict/retry checks. See [S11 evidence](docs/evidence/2026-10-27-ticket-forms.md). Drafts remain page/session memory only; complete component/E2E coverage is the next stage.
 
 The root `.env.example` is the local configuration template. The current machine already has a generated `.env`; do not overwrite it or casually change the existing database password.
 
@@ -87,7 +91,7 @@ The helper checks the engine first and starts Docker Desktop through Windows Exp
 |---|---|---|
 | M0 | Permissions, states, ER model, API, data modes | Drafted; consistency review pending |
 | M1 | Database, authentication, three-role ticket API, audit | S05-S08 locally verified; remote CI/cloud later |
-| M2 | React business pages, caching, component tests, E2E | S09-S10 locally verified; S11-S12 planned |
+| M2 | React business pages, caching, component tests, E2E | S09-S11 locally verified; S12 planned |
 | M3 | Knowledge versions, retrieval, AI jobs, citations, human review | Planned |
 | M4 | SQL/AI evaluation, Compose, recovery, complete CI | Planned |
 | M5 | Azure, IaC, observability, release rollback, portfolio evidence | Planned |
@@ -109,6 +113,7 @@ Tasks, dependencies, acceptance, and next steps live in [progress](docs/progress
 - [Transactional audit and tracing](docs/audit.md)
 - [Frontend sessions, pages, proxy, and browser fixtures](docs/frontend.md)
 - [Query cache, filters, and pagination policy](docs/query-cache.md)
+- [Business forms and safe write recovery](docs/forms.md)
 - [GitHub setup and commit policy](docs/git-workflow.md)
 - [Foundation decision](docs/adr/0001-foundation-and-scope.md)
 

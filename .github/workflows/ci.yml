@@ -50,3 +50,5 @@ jobs:
         working-directory: frontend
       - run: npm run test:query
         working-directory: frontend
+      - run: npm run test:writes
+        working-directory: frontend

@@ -21,6 +21,7 @@ from sqlalchemy import create_engine, select, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session
 import uvicorn
+from fastapi.responses import JSONResponse
 
 from supportops.config import Settings, load_settings
 from supportops.main import create_app
@@ -39,6 +40,8 @@ def main():
     parser.add_argument('--read-delay-ms', type=int, default=0, choices=range(0, 2001), metavar='0..2000')
     parser.add_argument('--extra-tickets', type=int, default=0, choices=range(0, 101), metavar='0..100')
     parser.add_argument('--session-minutes', type=int, default=1, choices=range(1, 31), metavar='1..30')
+    parser.add_argument('--lose-first-write-response', action='store_true', help='Return a test-only 503 after the first successful ticket write commits')
+    parser.add_argument('--write-delay-ms', type=int, default=0, choices=range(0, 2001), metavar='0..2000')
     args = parser.parse_args()
     configured = load_settings().database_url
     if not configured:
@@ -82,6 +85,21 @@ def main():
         print('Synthetic accounts: requester-a, requester-b, agent-a, agent-b, manager @example.invalid', flush=True)
         print('Use the public test-only password documented in this script; no local credentials are printed.', flush=True)
         app = create_app(Settings(jwt_secret='S09-test-only-signing-secret-' * 3, access_token_minutes=args.session_minutes), engine=engine)
+        if args.lose_first_write_response or args.write_delay_ms:
+            lost_response = False
+
+            @app.middleware('http')
+            async def write_transport_check(request, call_next):
+                nonlocal lost_response
+                is_write = request.method in {'POST', 'PATCH'} and request.url.path.startswith('/api/tickets')
+                if is_write and args.write_delay_ms:
+                    await asyncio.sleep(args.write_delay_ms / 1000)
+                response = await call_next(request)
+                if is_write and args.lose_first_write_response and not lost_response and 200 <= response.status_code < 300:
+                    lost_response = True
+                    print('Test transport replaced one committed write response with 503.', flush=True)
+                    return JSONResponse(status_code=503, content={'error': {'code': 'test_response_lost'}}, headers={'Cache-Control': 'no-store'})
+                return response
         if args.read_delay_ms:
             @app.middleware('http')
             async def delayed_reads(request, call_next):

@@ -6,6 +6,8 @@ import {
 } from "../state/queries.ts";
 import type { Session } from "../App.tsx";
 import { Empty, ErrorPanel, Loading } from "../components/Feedback.tsx";
+import { TicketActions } from "../components/TicketActions.tsx";
+import { useTicketWrite } from "../hooks/useTicketWrite.ts";
 import {
   PriorityLabel,
   shortId,
@@ -23,6 +25,7 @@ export function TicketDetailPage({
   backHref: string;
 }) {
   const client = useQueryClient();
+  const write = useTicketWrite(session);
   const query = useQuery(detailOptions(session, id));
   const state = queryView(query);
   const reload = () => {
@@ -117,6 +120,7 @@ export function TicketDetailPage({
               </ol>
             )}
           </section>
+          <TicketActions ticket={ticket} session={session} write={write} />
           {session.user.role !== "requester" && ticket.events && (
             <section className="panel" aria-labelledby="history-heading">
               <div className="panel-heading">

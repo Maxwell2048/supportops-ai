@@ -59,6 +59,29 @@ def authorization(app, label):
     return {"Authorization": "Bearer " + issue_token(synthetic_id(label), app.state.settings)}
 
 
+@pytest.mark.parametrize("label", ["requester-a", "agent-a", None])
+def test_assignment_directory_rejects_nonmanagers(auth_app, label):
+    async def scenario(client):
+        response = await client.get("/api/agents", headers=authorization(auth_app, label) if label else {})
+        assert response.status_code == (403 if label else 401)
+    run(auth_app, scenario)
+
+
+def test_assignment_directory_projects_only_active_agents_and_rechecks_role(auth_app, db_session):
+    async def scenario(client):
+        headers = authorization(auth_app, "manager")
+        response = await client.get("/api/agents", headers=headers)
+        assert response.status_code == 200
+        assert [row["email"] for row in response.json()] == ["agent-a@example.invalid", "agent-b@example.invalid"]
+        assert all(set(row) == {"id", "email", "role"} and row["role"] == "agent" for row in response.json())
+        db_session.execute(update(User).where(User.id == synthetic_id("agent-b")).values(active=False))
+        response = await client.get("/api/agents", headers=headers)
+        assert [row["email"] for row in response.json()] == ["agent-a@example.invalid"]
+        db_session.execute(update(User).where(User.id == synthetic_id("manager")).values(role="requester"))
+        assert (await client.get("/api/agents", headers=headers)).status_code == 403
+    run(auth_app, scenario)
+
+
 def test_login_then_me_returns_only_public_identity(auth_app):
     async def scenario(client):
         response = await client.post("/api/auth/login", json={"email": " Requester-A@Example.Invalid ", "password": PASSWORD})

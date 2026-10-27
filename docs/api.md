@@ -19,6 +19,7 @@ Implemented: login/me, ticket create/list/detail/PATCH/messages/events, manager 
 |---|---|---|
 | POST /api/auth/login | email,password | 200 access_token,token_type,expires_in; invalid credentials 401 |
 | GET /api/me | None | 200 current active identity id,email,role |
+| GET /api/agents | None | 200 active agents id,email,role ordered by email/id; manager only; no pagination in the small synthetic workspace |
 | GET /api/tickets | status,priority,assignee_id,q,cursor,limit | 200 authorized list; filters cannot broaden visibility |
 | POST /api/tickets | title(1-200),body(1-10000) | 201 TicketSummary; requester only |
 | GET /api/tickets/{id} | None | 200 ticket + authorized messages; requester excludes internal fields |

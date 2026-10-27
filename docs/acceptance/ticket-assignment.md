@@ -1,6 +1,6 @@
 # Ticket assignment: Acceptance and implementation sequence
 
-Date: 2026-10-22. S07 backend rules are verified: [evidence](../evidence/2026-10-21-ticket-workflow.md). S08 verifies A01 success audit and A06 audit-failure rollback: [evidence](../evidence/2026-10-22-audit-verification.md). A05 client input preservation remains M2 work.
+Date: 2026-10-22. S07 backend rules are verified: [evidence](../evidence/2026-10-21-ticket-workflow.md). S08 verifies A01 success audit and A06 audit-failure rollback: [evidence](../evidence/2026-10-22-audit-verification.md). S11 newly verifies A05 client assignment-selection preservation and explicit review, plus unavailable-target prompts in the real browser: [2026-10-27 evidence](../evidence/2026-10-27-ticket-forms.md).
 
 Story: As a manager, I want to assign a ticket to an available support agent so responsibility and handoff history are explicit.
 

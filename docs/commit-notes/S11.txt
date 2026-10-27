@@ -1,0 +1,17 @@
+feat(frontend): add ticket forms with conflict-safe drafts and write recovery
+
+I connected the three roles to the existing ticket write API so requesters can submit and reply, staff can work through supported states, and managers can assign, prioritize, close, reopen and archive tickets. I kept server authorization and transactional rules authoritative and added only a manager-scoped active-agent read endpoint, with explicit identity-field projection.
+
+Important changes and reasons:
+- I added typed POST/PATCH/message contracts and safe error-code prompts without reflecting arbitrary API/proxy text. Resolving or waiting includes its public reply atomically; internal notes and public reopen reasons remain explicit.
+- I retain draft text, assignment selections and the first edited version above query revalidation boundaries. A 409 reloads current data but requires explicit review and a separate submission rather than silently rebasing a stale draft.
+- I bind UUID idempotency keys to the exact operation/payload. Unchanged retries reuse them; edits and reviewed versions replace them. For uncertain outcomes I lock editing and retry the original submitted body, even if current data changes, to recover a committed result safely.
+- I prevent rapid duplicate sends with a synchronous guard and pending controls. Mutations do not automatically retry or queue offline. Successful writes invalidate current-session lists/details; authorization/conflict responses revalidate access/current state; mutation401 expires the session. Unmount aborts owned requests and suppresses late navigation.
+- I added active-agent availability refresh and a retained unavailable selection that cannot be mistaken for unassigned. The server rechecks availability when saving.
+- I extended the disposable loopback browser helper with delayed writes and one lost committed-response simulation. I added real PostgreSQL directory tests, write protocol/key tests and mutation-expiry coverage, and configured CI to run the write suite.
+
+Validation: 177 backend tests passed with zero skips;17 API,11 query/mutation and6 write tests passed; clean npm installation and production build passed. Browser checks covered keyboard creation, real two-session reply and assignment conflicts, preserved text/agent selection, agent work/internal notes/resolution, manager close/archive/unarchive/reopen, former-agent404, requester internal-note isolation, double-click creation/replies and a lost successful acknowledgement recovered to one ticket. Direct reads of the owned test schema confirmed one ticket/one reply/two events/two audit rows. A selected synthetic agent disabled after loading was rejected with422. A measured390x844 form showed no horizontal overflow and visible keyboard focus. The final unavailable-selection display was corrected and checked again. Exact evidence and limitations are in docs/evidence/2026-10-27-ticket-forms.md.
+
+Limitations: drafts/recovery keys are page/session memory only and are lost on navigation, reload or expiry. Complete rendered-component/E2E/accessibility/browser-matrix coverage belongs to S12. Directory pagination, phone persistence, audit UI, cloud, AI and remote CI validation remain outside this stage. No migration or dependency version changed. Historical outcomes are preserved rather than relabeled as new execution.
+
+Implementation and verification used AI assistance; this first-person maintenance record does not claim independent handwritten code or production experience.

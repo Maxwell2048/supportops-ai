@@ -13,6 +13,7 @@ import { ErrorPanel } from "./components/Feedback.tsx";
 import { LoginPage } from "./pages/LoginPage.tsx";
 import { TicketListPage } from "./pages/TicketListPage.tsx";
 import { TicketDetailPage } from "./pages/TicketDetailPage.tsx";
+import { CreateTicketPage } from "./pages/CreateTicketPage.tsx";
 
 export interface Session {
   key: string;
@@ -133,6 +134,8 @@ function Workspace({
                 window.location.hash = listHref(filters).slice(1);
               }}
             />
+          ) : route.kind === "create" ? (
+            <CreateTicketPage session={session} backHref={backHref} />
           ) : route.kind === "detail" ? (
             <TicketDetailPage
               key={route.id}

@@ -53,6 +53,42 @@ export interface TicketPage {
   next_cursor: string | null;
 }
 
+export interface TicketPatch {
+  expected_version: number;
+  status?: TicketStatus;
+  priority?: Priority;
+  assignee_id?: string | null;
+  archived?: boolean;
+  reason?: string;
+  public_reply?: string;
+}
+export interface MessageCreate {
+  expected_version: number;
+  visibility: "public" | "internal";
+  body: string;
+}
+export function parseAgents(value: unknown): User[] {
+  return array(value, (item) => {
+    const user = parseUser(item);
+    if (user.role !== "agent") throw new Error("Invalid directory role");
+    return user;
+  });
+}
+export function parseMessageWrite(value: unknown) {
+  const row = record(value),
+    message = record(row.message);
+  return {
+    ticket_version: integer(row.ticket_version),
+    message: {
+      id: uuid(message.id),
+      author_id: uuid(message.author_id),
+      visibility: choice(message.visibility, ["public", "internal"] as const),
+      body: text(message.body),
+      created_at: timestamp(message.created_at),
+    },
+  };
+}
+
 export const isUuid = (value: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 
