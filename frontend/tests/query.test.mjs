@@ -40,6 +40,24 @@ const session = {
   user: { id: "11111111-1111-4111-8111-111111111111", role: "manager" },
 };
 const id = "22222222-2222-4222-8222-222222222222";
+test("write 401 expires the session without retrying or queuing offline mutations", async (t) => {
+  let expired = 0,
+    calls = 0;
+  const client = clientFor(t, () => {
+    expired++;
+  });
+  const mutation = client.getMutationCache().build(client, {
+    mutationFn: async () => {
+      calls++;
+      throw new ApiError(401, "invalid_session", "Session expired");
+    },
+  });
+  await assert.rejects(mutation.execute(undefined));
+  assert.equal(expired, 1);
+  assert.equal(calls, 1);
+  assert.equal(client.getDefaultOptions().mutations.networkMode, "always");
+  assert.equal(client.getDefaultOptions().mutations.retry, false);
+});
 function clientFor(t, onExpired) {
   const client = createSessionClient(onExpired);
   t.after(() => client.clear());

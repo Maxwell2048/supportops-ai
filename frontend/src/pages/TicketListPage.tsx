@@ -145,6 +145,13 @@ export function TicketListPage({
         filters={filters}
         apply={onFilters}
       />
+      {session.user.role === "requester" && (
+        <p>
+          <a className="button primary" href="#/tickets/new">
+            New request
+          </a>
+        </p>
+      )}
       <section className="panel" aria-labelledby="list-heading">
         <div className="panel-heading">
           <h2 id="list-heading">

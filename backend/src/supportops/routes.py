@@ -47,6 +47,14 @@ def me(user: CurrentUser):
     return UserResponse.model_validate(user)
 
 
+@router.get("/agents", response_model=list[UserResponse], tags=["tickets"])
+def available_agents(user: CurrentUser, session: DbSession):
+    if user.role != "manager":
+        raise ApiError(403, "forbidden", "Only managers can read the assignment directory")
+    statement = select(User).where(User.role == "agent", User.active.is_(True)).order_by(User.email, User.id)
+    return [UserResponse.model_validate(row) for row in session.scalars(statement)]
+
+
 @router.get("/tickets", response_model=TicketPage, tags=["tickets"])
 def ticket_list(request: Request, user: CurrentUser, session: DbSession, query: Annotated[TicketQuery, Query()]):
     return query_tickets(session, user, query, request.app.state.settings)

@@ -1,4 +1,9 @@
-import { QueryCache, QueryClient, queryOptions } from "@tanstack/react-query";
+import {
+  MutationCache,
+  QueryCache,
+  QueryClient,
+  queryOptions,
+} from "@tanstack/react-query";
 import { api, ApiError } from "../api/client.ts";
 import type { Role } from "../api/contracts.ts";
 import { normalizeFilters } from "./ticketState.ts";
@@ -11,12 +16,18 @@ export interface QuerySession {
 }
 export function createSessionClient(onExpired: () => void = () => {}) {
   return new QueryClient({
+    mutationCache: new MutationCache({
+      onError: (error) => {
+        if (error instanceof ApiError && error.status === 401) onExpired();
+      },
+    }),
     queryCache: new QueryCache({
       onError: (error) => {
         if (error instanceof ApiError && error.status === 401) onExpired();
       },
     }),
     defaultOptions: {
+      mutations: { retry: false, networkMode: "always" },
       queries: {
         staleTime: 15_000,
         gcTime: 120_000,

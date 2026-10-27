@@ -20,8 +20,49 @@ a {
   text-decoration: none;
 }
 button,
-input {
+input,
+textarea,
+select {
   font: inherit;
+}
+
+.write-panel {
+  padding: 24px;
+  margin: 20px 0;
+}
+.write-panel h2 {
+  margin-top: 0;
+}
+.write-panel fieldset {
+  border: 0;
+  padding: 0;
+  margin: 16px 0;
+  min-width: 0;
+}
+.write-panel label {
+  display: block;
+  margin: 16px 0 8px;
+  font-weight: 600;
+}
+.write-panel textarea,
+.write-panel select {
+  width: 100%;
+  max-width: 100%;
+  padding: 12px;
+  border: 1px solid #c8d4cb;
+  border-radius: 6px;
+  background: white;
+}
+.write-panel textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+.write-panel button {
+  margin-top: 12px;
+  white-space: normal;
+}
+.write-panel :disabled {
+  opacity: 0.65;
 }
 button,
 a,

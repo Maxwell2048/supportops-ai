@@ -52,6 +52,7 @@ export function listHref(filters: TicketFilters) {
 }
 export function routeFromHash(hash: string) {
   const [path, query = ""] = (hash.slice(1) || "/tickets").split("?");
+  if (path === "/tickets/new" && !query) return { kind: "create" as const };
   if (path === "/tickets" || path === "/") {
     try {
       const params = new URLSearchParams(query);

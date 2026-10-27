@@ -4,8 +4,11 @@ import {
   parsePage,
   parseToken,
   parseUser,
+  parseAgents,
+  parseTicket,
+  parseMessageWrite,
 } from "./contracts.ts";
-import type { Role } from "./contracts.ts";
+import type { Role, TicketPatch, MessageCreate } from "./contracts.ts";
 import type { TicketFilters } from "../state/ticketState.ts";
 
 export class ApiError extends Error {
@@ -30,6 +33,8 @@ export class ApiError extends Error {
 }
 
 interface Options {
+  method?: "POST" | "PATCH";
+  key?: string;
   token?: string;
   body?: unknown;
   signal?: AbortSignal;
@@ -55,10 +60,11 @@ export function createApi(fetcher: typeof fetch = fetch, timeoutMs = 15000) {
         throw new DOMException("Request cancelled", "AbortError");
       const headers: Record<string, string> = { Accept: "application/json" };
       if (options.token) headers.Authorization = `Bearer ${options.token}`;
+      if (options.key) headers["Idempotency-Key"] = options.key;
       if (options.body !== undefined)
         headers["Content-Type"] = "application/json";
       const response = await fetcher(`/api${path}`, {
-        method: options.body === undefined ? "GET" : "POST",
+        method: options.method ?? (options.body === undefined ? "GET" : "POST"),
         headers,
         body:
           options.body === undefined ? undefined : JSON.stringify(options.body),
@@ -103,10 +109,19 @@ export function createApi(fetcher: typeof fetch = fetch, timeoutMs = 15000) {
           429: "Too many sign-in attempts. Wait before trying again.",
         };
         const delay = Number(response.headers.get("Retry-After"));
+        const fieldMessages: Record<string, string> = {
+          assignee_unavailable:
+            "This agent is no longer available. Refresh the agent list and choose an active agent.",
+          no_changes: "Choose a value different from the current ticket value.",
+          public_reply_required: "Enter a public reply for this status change.",
+          reopen_reason_required:
+            "Enter a public reason for reopening this ticket.",
+        };
         throw new ApiError(
           response.status,
           code,
-          messages[response.status] ??
+          (response.status === 422 ? fieldMessages[code] : undefined) ??
+            messages[response.status] ??
             "The service is temporarily unavailable. Please try again.",
           requestId,
           response.status === 429 &&
@@ -144,6 +159,40 @@ export function createApi(fetcher: typeof fetch = fetch, timeoutMs = 15000) {
     }
   }
   return {
+    agents: (token: string, signal?: AbortSignal) =>
+      request("/agents", parseAgents, { token, signal }),
+    createTicket: (
+      token: string,
+      body: { title: string; body: string },
+      key: string,
+      signal?: AbortSignal,
+    ) => request("/tickets", parseTicket, { token, body, key, signal }),
+    patchTicket: (
+      id: string,
+      token: string,
+      body: TicketPatch,
+      key: string,
+      signal?: AbortSignal,
+    ) =>
+      request(`/tickets/${encodeURIComponent(id)}`, parseTicket, {
+        token,
+        body,
+        key,
+        signal,
+        method: "PATCH",
+      }),
+    message: (
+      id: string,
+      token: string,
+      body: MessageCreate,
+      key: string,
+      signal?: AbortSignal,
+    ) =>
+      request(
+        `/tickets/${encodeURIComponent(id)}/messages`,
+        parseMessageWrite,
+        { token, body, key, signal },
+      ),
     login: (email: string, password: string, signal?: AbortSignal) =>
       request("/auth/login", parseToken, {
         body: { email: email.trim().toLowerCase(), password },

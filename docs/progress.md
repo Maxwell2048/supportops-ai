@@ -2,7 +2,7 @@
 
 Updated: 2026-10-27 (Australia/Perth).
 
-States: planned = unimplemented; drafted = design only; implemented = artifacts exist; verified = actual execution evidence. M1 S05-S08 and S09-S10 read-only pages/cache/filter/paging are locally verified. S11-S12 remain planned.
+States: planned = unimplemented; drafted = design only; implemented = artifacts exist; verified = actual execution evidence. M1 S05-S08 and M2 S09-S11 pages/cache/forms are locally verified. S12 remains planned.
 
 ## Delivery history
 
@@ -26,6 +26,9 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 
 ## Main track
 
+- S11 implemented: role/state-scoped create/reply/assignment/status/priority/archive forms, manager-only active-agent directory, exact-payload idempotent retries, retained draft/version review, duplicate guards, mutation401 expiry and unavailable-selection handling. See [form policy](forms.md).
+- S11 verified on 2026-10-27:177 real-PostgreSQL tests,17 API/11 query-mutation/6 write tests, clean install/build, real two-session reply/assignment conflicts and preserved drafts, agent/manager workflows, lost committed-response recovery, double clicks, unavailable targets and measured390x844 form/keyboard focus. See [new execution evidence](evidence/2026-10-27-ticket-forms.md). Full component/E2E/browser/accessibility coverage remains S12.
+
 | ID | Milestone | Deliverable/acceptance | Status | Dependencies |
 |---|---|---|---|---|
 | S01 | M0 | Roles/stories/cross-user negative cases | Drafted | None |
@@ -38,7 +41,7 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 | S08 | M1 | Atomic audit/rollback/request IDs | Locally verified; persistent/cloud logs later | S07 |
 | S09 | M2 | Typed API/login/list/details/four request states | Locally verified; full component/E2E suite remains S12 | S06,S07 |
 | S10 | M2 | TanStack Query/pagination/filters/invalidation/user cleanup | Locally verified; full component/E2E remains S12 | S09 |
-| S11 | M2 | Forms/duplicate sends/keyboard/narrow screens | Planned | S10 |
+| S11 | M2 | Forms/duplicate sends/keyboard/narrow screens | Locally verified; broad component/E2E/accessibility S12 | S10 |
 | S12 | M2 | Vitest/RTL/Playwright three-role flows | Planned | S11 |
 | S13 | M3 | Immutable knowledge versions/publication/scopes | Planned | S05,S06 |
 | S14 | M3 | Keyword baseline/persistent vectors/model-dimension versions | Planned | S13 |
@@ -56,14 +59,14 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 | S26 | M5 | Release/app rollback/independent data restore | Planned | S25 |
 | S27 | M5 | README/ADRs/video/measurements/contribution evidence | Planned | S20,S21,S23,S26 |
 
-## Next: S11 business forms and interaction safety
+## Next: S12 component and E2E regression
 
-1. Add authorized create/reply/assignment/status/archive forms without bypassing server field/object permissions. Provide any necessary authorized directory read through the API rather than inventing users.
-2. Preserve input and idempotency keys correctly after transient failures; changed payloads require a new key. Prevent duplicate submits and show409 conflicts without overwriting current data.
-3. Invalidate current-session ticket lists/details only after successful writes. Keep query lifecycle, logout clearing, and current-access revalidation intact.
-4. Verify keyboard focus, field errors, narrow-screen forms, and non-color status feedback. Full persisted RTL/Playwright suite belongs to S12.
-5. S10 fixture helpers support extra synthetic tickets/session duration in owned *_test schemas. Temporary browser/API/Vite processes are stopped; cleanup is verified before publication. Development records remain untouched.
-6. Continue detailed English commit notes and evidence with the supplied Maxwell identity. Remote CI, Azure, and AI execution remain separate unverified milestones.
+1. Add pinned Vitest/React Testing Library and Playwright with lock updates, using synthetic owned test data and actual role/object authorization.
+2. Persist rendered-form tests for required/invalid input, double submits, retained drafts during refetch409, exact-body retries after ambiguous success and late responses after logout. Include unavailable-agent selection and mutation401.
+3. Automate three-role create/assign/work/reply/resolve/reopen/close/archive flows, requester internal-note isolation, forbidden-object URLs and concurrent updates against real PostgreSQL.
+4. Cover desktop/narrow widths, keyboard focus, error announcements and loading/empty/error/success views. A smoke screenshot is not a complete accessibility audit.
+5. Keep existing API/query/write suites, documented memory-only draft limits and isolated fixture cleanup. S11 adds test-only delayed writes/lost acknowledgements; these are not production failure flags.
+6. Continue detailed English commit notes and evidence with the supplied Maxwell identity. Remote CI, Azure and AI execution remain independently unverified milestones.
 
 Auth parameters are fixed in auth.md/ADR0003. Embedding/model choices (S14/S15), worker parameters (S16), and Azure region/pricing/resources/shared throttling (S24) remain open.
 

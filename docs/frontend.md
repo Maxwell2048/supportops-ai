@@ -1,4 +1,4 @@
-# S09-S10: Typed read-only pages and query lifecycle
+# S09-S11: Typed ticket pages, query lifecycle and forms
 
 Date: 2026-10-27 (Australia/Perth). [S09 evidence](evidence/2026-10-27-frontend-foundation.md); [S10 cache policy/evidence](query-cache.md).
 
@@ -6,7 +6,7 @@ Date: 2026-10-27 (Australia/Perth). [S09 evidence](evidence/2026-10-27-frontend-
 
 Implemented: email/password login, current identity, role-scoped ticket list, basic cursor next/previous navigation, ticket details, public/internal conversation, staff activity, explicit loading/empty/error/success views, refresh, sign-out, and expired-session handling. UI copy and source comments are English; timestamps explicitly use Perth (UTC+8).
 
-This stage reads existing ticket APIs. Ticket creation/assignment/replies/state forms, knowledge/AI controls, manager audit UI, the complete component/E2E suite remain later milestones. S10 adds search/status/priority filters, session-scoped TanStack caching, and retained pagination; see query-cache.md. No mock data is displayed as real application data.
+S09 introduced read-only views; S10 adds search/status/priority filters, session-scoped caching and retained pagination. S11 adds create/reply/assignment/priority/state/archive forms, active-agent selection, conflict drafts and safe uncertain-result retries; see [forms](forms.md) and [evidence](evidence/2026-10-27-ticket-forms.md). Knowledge/AI controls, manager audit UI and the complete component/E2E suite remain later milestones. No mock data is displayed as real application data.
 
 ## Run against the development database
 
@@ -37,8 +37,8 @@ On Windows, stop Vite before npm ci: its loaded native binding can prevent npm f
 - Each sign-in mounts a new workspace, even for the same account. Sign-out, expiry, account changes, route changes, and retries cancel superseded fetches; query cancellation and session-owned clients reject late results. A changed request key renders loading rather than a previous ticket.
 - Requests have a 15-second deadline, omit ambient cookies, disable cache, and reject redirects. Unknown proxy/server error bodies are not reflected. Error cards show safe messages and validated UUID request IDs when available; network/proxy failures may have no API request ID.
 - Explicit TypeScript DTOs have runtime field validation. Unknown fields are discarded. A requester projection drops internal messages/events as display defense; server role/object authorization remains mandatory and independently tested.
-- Ticket text is rendered as React text, never injected HTML. Staff activity shows event metadata without copying arbitrary change objects. The current API returns participant/assignee IDs rather than a user directory. Staff views use those identifiers; requester views say Support team or Awaiting assignment instead of exposing personnel identifiers. The UI does not invent personal names.
-- Hash routes support list/detail/back navigation without a routing dependency. Basic paging is uncached; returning from details starts the list at page 1. S10 query/cache behavior is documented in query-cache.md.
+- Ticket text is rendered as React text, never injected HTML. Staff activity shows event metadata without copying arbitrary change objects. Ticket responses use participant/assignee IDs; S11 adds a separate manager-only active-agent directory for assignment. Staff detail views use identifiers; requester views say Support team or Awaiting assignment instead of exposing personnel identifiers. The UI does not invent personal names.
+- Hash routes support list/detail/new-request/back navigation without a routing dependency. S10 preserves detail-return pagination; query/cache behavior is documented in query-cache.md. S11 drafts survive revalidation on the current page, but navigation discards them as documented in forms.md.
 
 ## Repeatable browser fixture server
 
@@ -69,6 +69,7 @@ npm ci
 npm run build
 npm run test:api
 npm run test:query
+npm run test:writes
 ```
 
 The dependency-free Node API suite checks credentials/URL boundaries, DTO validation, requester projection, error redaction/status/request IDs, cursor encoding, cancellation, timeouts, and network failure. CI is configured to run it, but a configuration edit is not remote CI verification. There were no dependency changes in S09. S10 pins @tanstack/react-query 5.105.0 and updates package-lock.json; its10 query tests use real QueryClient/QueryObserver behavior.
