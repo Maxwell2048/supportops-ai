@@ -9,6 +9,7 @@ from supportops.db import check_readiness, make_engine
 from supportops.errors import install_error_handlers
 from supportops.rate_limit import LoginLimiter
 from supportops.routes import router
+from supportops.knowledge_routes import router as knowledge_router
 
 
 class HealthResponse(BaseModel):
@@ -38,6 +39,7 @@ def create_app(settings: Settings | None = None, *, engine: Engine | None = None
     app.state.login_limiter = LoginLimiter()
     install_error_handlers(app)
     app.include_router(router)
+    app.include_router(knowledge_router)
 
     @app.get("/health", response_model=HealthResponse, tags=["operations"])
     def health() -> HealthResponse:

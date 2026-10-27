@@ -1,6 +1,6 @@
 # Local database and migrations
 
-S05 passed 19 tests; [historical evidence](evidence/2026-10-21-postgresql-verification.md). S08 passed 173 tests and requires 0003_audit_events; see [audit](audit.md).
+S05 passed 19 tests; [historical evidence](evidence/2026-10-21-postgresql-verification.md). S08 passed 173 tests at0003_audit_events. S13 now expects0004_knowledge_versions and passed226 tests; [current migration/data-preservation evidence](evidence/2026-10-27-knowledge-versioning.md).
 
 ## Prepare PostgreSQL
 
@@ -32,6 +32,8 @@ uv run --locked python ../scripts/seed.py
 Readiness checks connectivity and the exact schema revision; missing configuration, connection failure, or stale revision returns 503. Startup does not create tables automatically.
 
 Minimal seed: five fictional accounts, one ticket, one creation event. Stable UUIDs make repeats safe without resetting passwords/active/roles. New accounts default disabled; S06 explicitly activated local demo accounts separately. Approximately 100 tickets and 20-30 knowledge articles remain future targets. Existing local history is preserved when seed wording changes.
+
+S13 adds a separate draft-first knowledge importer: from backend run `uv run --locked python ../scripts/seed_knowledge.py` after migration and demo-manager activation. It processes four original synthetic fixtures and reuses successful idempotent results. Publication requires a separate explicit operation; see [knowledge setup](knowledge.md).
 
 ## Real database tests
 

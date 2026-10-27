@@ -2,7 +2,7 @@
 
 Updated: 2026-10-27 (Australia/Perth).
 
-States: planned = unimplemented; drafted = design only; implemented = artifacts exist; verified = actual execution evidence. M1 S05-S08 and M2 S09-S12 pages/cache/forms/component/E2E are locally verified. M3 starts at S13.
+States: planned = unimplemented; drafted = design only; implemented = artifacts exist; verified = actual execution evidence. M1 S05-S08, M2 S09-S12 and M3 S13 knowledge versioning are locally verified. Retrieval begins at S14.
 
 ## Delivery history
 
@@ -31,6 +31,9 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 - S12 implemented: pinned Vitest/jsdom/Testing Library/Playwright,12 component regressions, two viewport projects with five whole-system scenarios, test-source type checking, an owned API/schema runner, CI commands and safe report policy. See [testing guide](testing.md) and [ADR0008](adr/0008-component-and-isolated-browser-tests.md).
 - S12 verified:177 real-PostgreSQL backend tests,46 client/component tests and10 Chromium E2E cases passed; clean install/type checks/build passed. The final browser run took20.2s, covered1280x800 and390x844 without automatic retries, and removed its owned schema. An intentionally invalid project returned the expected failure and also cleaned up; final schema count0/no test listeners. See [new execution evidence](evidence/2026-10-27-frontend-regression.md). Remote CI/Linux, other browser engines and broad accessibility remain unverified.
 
+- S13 implemented:0004 knowledge articles/immutable versions/append-only audit, current publication pointers, manager writes, current support/management authorization for historical reads, signed bounded lists and four draft-first synthetic fixtures. See [knowledge guide](knowledge.md) and [ADR0009](adr/0009-immutable-knowledge-and-current-scope.md).
+- S13 verified:226 real-PostgreSQL backend tests,46 client/component tests and12 real HTTP/browser E2E cases passed; clean install/types/build passed. Development0003->0004 preserved existing data in all six original tables; four draft fixtures imported twice without duplication and readiness passed. Historical scope/archive restrictions, independent-connection concurrency, immutable DML and audit rollback were verified. See [new evidence](evidence/2026-10-27-knowledge-versioning.md). Retrieval, knowledge UI, AI/cloud and remote CI remain unverified.
+
 | ID | Milestone | Deliverable/acceptance | Status | Dependencies |
 |---|---|---|---|---|
 | S01 | M0 | Roles/stories/cross-user negative cases | Drafted | None |
@@ -45,7 +48,7 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 | S10 | M2 | TanStack Query/pagination/filters/invalidation/user cleanup | Locally verified; full component/E2E remains S12 | S09 |
 | S11 | M2 | Forms/duplicate sends/keyboard/narrow screens | Locally verified; broad component/E2E/accessibility S12 | S10 |
 | S12 | M2 | Vitest/RTL/Playwright three-role flows | Locally verified; remote CI and broader browser/accessibility coverage later | S11 |
-| S13 | M3 | Immutable knowledge versions/publication/scopes | Planned | S05,S06 |
+| S13 | M3 | Immutable knowledge versions/publication/scopes | Locally verified API/data; knowledge UI and retrieval later | S05,S06 |
 | S14 | M3 | Keyword baseline/persistent vectors/model-dimension versions | Planned | S13 |
 | S15 | M3 | Provider/timeouts/schema/error classes | Planned | S14 |
 | S16 | M3 | Durable jobs/leases/idempotency/restart recovery | Planned | S15 |
@@ -61,14 +64,14 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 | S26 | M5 | Release/app rollback/independent data restore | Planned | S25 |
 | S27 | M5 | README/ADRs/video/measurements/contribution evidence | Planned | S20,S21,S23,S26 |
 
-## Next: S13 immutable knowledge versions and authorized publication
+## Next: S14 authorized retrieval and persistent vectors
 
-1. Define logical articles, immutable version IDs, draft/published/archive semantics and role-based public/internal knowledge scope before building retrieval or AI.
-2. Add an incremental Alembic migration and manager-only creation/publication operations with explicit concurrency/idempotency and audit behavior. Preserve existing ticket data and historical migrations.
-3. Add only synthetic/licensed knowledge content, with source/version provenance. Published citations must remain traceable to immutable versions even when a newer version is published.
-4. Verify publication permissions, unauthorized draft/internal reads, version immutability, superseded/archive behavior and migration preservation against real PostgreSQL. Retrieval/index/model jobs remain S14 onward.
-5. Preserve the S12 component/E2E commands and owned fixture cleanup. New authentication or ticket changes should keep those regressions passing.
-6. Continue detailed English commit notes and execution evidence with the supplied Maxwell identity. Remote CI, Azure and AI execution remain independently unverified milestones.
+1. Build deterministic immutable chunks with version IDs, ordinal/source offsets and hashes. Only current published, non-archived authorized snapshots can enter retrieval; old readable citations are not current candidates.
+2. Establish a reproducible keyword baseline before claiming vector quality. Apply current scope before ranking/limits and exclude drafts/management data from agent results.
+3. Verify a compatible embedding provider/model, license, dimension and normalization policy, then store versioned representations and real persistent vectors. Label synthetic/mock execution separately from actual embeddings.
+4. Add ingestion/reindex idempotency and publication/archive/scope-change regression so stale vectors cannot bypass current SQL authorization. Do not feed retrieved instructions into permission/business decisions.
+5. Keep all existing backend, component and E2E checks passing; record measured retrieval behavior and limits without inventing evaluation scores. The corpus currently has four synthetic examples; labels/holdout evaluation remain S21.
+6. Continue detailed English commit notes and execution evidence with the supplied Maxwell identity. AI generation, cloud and remote CI execution remain independently unverified.
 
 Auth parameters are fixed in auth.md/ADR0003. Embedding/model choices (S14/S15), worker parameters (S16), and Azure region/pricing/resources/shared throttling (S24) remain open.
 

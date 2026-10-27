@@ -2,7 +2,7 @@
 
 An AI-assisted ticket and knowledge collaboration platform for a fictional software support team. This portfolio project demonstrates full-stack development, authorization, data consistency, AI evaluation, and eventual Azure delivery.
 
-**Current stage: M2 locally verified through S12: ticket pages, caching, business forms, component tests and real-database E2E. Next: S13 knowledge versioning. AI and cloud deployment remain planned.**
+**Current stage: M3 S13 locally verified: immutable knowledge versions, manager publication/archive and current-scope history access. M1/M2 ticket workflows and regressions remain verified. Next: S14 retrieval. AI generation and cloud deployment remain planned.**
 
 The original requirements are preserved in an English translation of the [project brief](docs/planning/project-brief.md). Its planning-only statements describe the archived starting point. The current local repository is `D:\SupportOps AI`.
 
@@ -20,6 +20,7 @@ The original requirements are preserved in an English translation of the [projec
 - Ticket creation, authorized lists/filters/pagination, assignment, replies, status/archive changes, version conflicts, transactional events, persistent idempotency, manager audit queries, and redacted JSON request logs.
 - Role-scoped business forms, a manager-only active-agent directory, retained conflict drafts, duplicate-submit guards and same-request recovery after uncertain write results; see [form policy](docs/forms.md).
 - Repeatable Vitest/Testing Library component tests and Playwright three-role workflows in desktop/narrow viewports against an isolated real PostgreSQL API; see [testing guide](docs/testing.md).
+- Immutable knowledge snapshots with provenance/hashes, manager draft/publication/archive APIs, support/management scopes, transactional knowledge audit and four draft-first synthetic fixtures; see [knowledge guide](docs/knowledge.md). Knowledge UI and retrieval remain planned.
 - M0 permission, state, data model, API, and data policy drafts; S01-S27 milestone checklist.
 
 ## Run locally
@@ -72,6 +73,8 @@ The S08 acceptance run passed **173 backend tests with zero skips**; see [audit 
 
 S11 passed **177 backend tests with zero skips and 34 frontend tests**, plus clean installation/build and manual browser checks: [S11 evidence](docs/evidence/2026-10-27-ticket-forms.md). S12 newly passed **177 backend, 46 client/component and 10 E2E tests**, test-source type checking, clean installation and production build: [S12 evidence](docs/evidence/2026-10-27-frontend-regression.md). Drafts remain page/session memory only; remote CI and broad browser/accessibility coverage remain unverified.
 
+S13 newly passed **226 backend tests with zero skips, 46 client/component tests and 12 E2E cases**, plus clean installation/type checks/build. Development migration0003->0004 preserved existing rows, and four synthetic knowledge drafts imported twice without duplication: [S13 evidence](docs/evidence/2026-10-27-knowledge-versioning.md).
+
 The root `.env.example` is the local configuration template. The current machine already has a generated `.env`; do not overwrite it or casually change the existing database password.
 
 ```powershell
@@ -97,7 +100,7 @@ The helper checks the engine first and starts Docker Desktop through Windows Exp
 | M0 | Permissions, states, ER model, API, data modes | Drafted; consistency review pending |
 | M1 | Database, authentication, three-role ticket API, audit | S05-S08 locally verified; remote CI/cloud later |
 | M2 | React business pages, caching, component tests, E2E | S09-S12 locally verified; broader coverage/remote CI later |
-| M3 | Knowledge versions, retrieval, AI jobs, citations, human review | Planned |
+| M3 | Knowledge versions, retrieval, AI jobs, citations, human review | S13 locally verified; S14-S19 planned |
 | M4 | SQL/AI evaluation, Compose, recovery, complete CI | Planned |
 | M5 | Azure, IaC, observability, release rollback, portfolio evidence | Planned |
 
@@ -120,6 +123,7 @@ Tasks, dependencies, acceptance, and next steps live in [progress](docs/progress
 - [Query cache, filters, and pagination policy](docs/query-cache.md)
 - [Business forms and safe write recovery](docs/forms.md)
 - [Component tests and isolated browser regression](docs/testing.md)
+- [Knowledge versions, publication and history permissions](docs/knowledge.md)
 - [GitHub setup and commit policy](docs/git-workflow.md)
 - [Foundation decision](docs/adr/0001-foundation-and-scope.md)
 

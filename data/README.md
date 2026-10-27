@@ -12,3 +12,5 @@ The repeatable minimal seed was verified against real PostgreSQL: five synthetic
 - Cloud target: isolated synthetic data with an explicitly labeled mock if used. No cloud environment exists yet.
 
 External datasets require a source, license, permitted scope, and processing description. There are currently no external dataset dependencies. Repository seed text and test fixtures use English. Existing local development database history is not silently rewritten during repository translation.
+
+S13 provides four original English examples in knowledge/synthetic-v1.json, with explicit synthetic source references and provenance notes. Three are support scope and one management scope. The separate importer creates unpublished immutable drafts by default and does not reset prior publications/archives. See [knowledge lifecycle](../docs/knowledge.md). These four examples are not the planned evaluation corpus or completed20/10 labels.
