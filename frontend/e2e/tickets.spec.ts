@@ -245,14 +245,21 @@ test("concurrent assignments and replies preserve drafts until explicit version 
     manager.getByText("Your update was saved.", { exact: true }),
   ).toBeVisible();
   await current(page);
+  await expect(page.getByText(/Current version: 3\./)).toBeVisible();
   await page
     .getByLabel("Public reply", { exact: true })
     .fill("My original unsent draft.");
+  await expect(manager.getByText(/Current version: 3\./)).toBeVisible();
   await manager.getByLabel("Action", { exact: true }).selectOption("priority");
   await manager.getByLabel("New priority").selectOption("urgent");
+  // A previous success notice can remain visible until React renders the new pending state.
+  // Synchronize the competing write on its actual HTTP result, not that old notice.
+  const prioritySaved = manager.waitForResponse(response =>
+    response.request().method() === "PATCH" && response.url().endsWith(`/api/tickets/${created.id}`));
   await manager
     .getByRole("button", { name: "Change priority", exact: true })
     .click();
+  expect((await prioritySaved).status()).toBe(200);
   await expect(
     manager.getByText("Your update was saved.", { exact: true }),
   ).toBeVisible();

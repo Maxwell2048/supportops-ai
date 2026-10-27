@@ -1,0 +1,9 @@
+test(e2e): wait for the competing write before asserting a version conflict
+
+I inspected the actual GitHub Actions run for S13 instead of inferring remote success from local execution. Run40487638386 verified the API job, frontend installation/build, protocol/types and component suites, but the desktop concurrent-edit scenario failed while11 other E2E cases passed.
+
+I corrected the synchronization boundary in that scenario. A success notice from the previous assignment could still be visible before React rendered the next mutation's pending state. The test could therefore send the intended stale reply before the competing priority PATCH actually committed. I now assert the expected version3 precondition and wait for the specific competing PATCH response with status200 before submitting the stale reply. I kept retries disabled and did not increase timeouts or weaken the409 assertions.
+
+The focused local scenario passed in both Chromium viewport projects. Remote verification of this fix is pending the new push and is recorded separately in docs/evidence/2026-10-27-remote-ci.md. This commit changes tests only; S14 retrieval implementation remains separate. I used only the supplied Maxwell Git identity, and all repository/GitHub communication is English.
+
+Implementation and verification used AI assistance; this maintenance record does not claim independent handwritten code.
