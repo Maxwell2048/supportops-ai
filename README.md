@@ -2,7 +2,7 @@
 
 An AI-assisted ticket and knowledge collaboration platform for a fictional software support team. This portfolio project demonstrates full-stack development, authorization, data consistency, AI evaluation, and eventual Azure delivery.
 
-**Current stage: M2. S05-S08 backend and S09-S11 ticket pages, caching, filters, and business forms are locally verified. Next: S12 component/E2E tests. AI and cloud deployment remain planned.**
+**Current stage: M2 locally verified through S12: ticket pages, caching, business forms, component tests and real-database E2E. Next: S13 knowledge versioning. AI and cloud deployment remain planned.**
 
 The original requirements are preserved in an English translation of the [project brief](docs/planning/project-brief.md). Its planning-only statements describe the archived starting point. The current local repository is `D:\SupportOps AI`.
 
@@ -12,13 +12,14 @@ The original requirements are preserved in an English translation of the [projec
 - FastAPI `/health` for process liveness and `/ready` for database connectivity, migration version, and authentication configuration; unavailable dependencies return 503.
 - React/TypeScript/Vite login, role-scoped ticket list/details, public/internal conversation, staff activity, and loading/empty/error/success views; see [frontend guide](docs/frontend.md).
 - Exact dependency versions, `uv.lock`, and `package-lock.json`; TanStack React Query 5.105.0 provides per-session cache lifecycle and current-access revalidation.
-- GitHub Actions configuration for PostgreSQL backend tests, frontend build, and API-client tests. Remote CI results have not been verified.
+- GitHub Actions configuration for PostgreSQL backend tests, frontend build, protocol/component tests and isolated browser regression. Remote CI results have not been verified.
 - PostgreSQL 17.11 development container, image digest and loopback port pinned; persistence across stop/start verified.
 - Four foundational business tables plus idempotency and audit tables, Alembic migrations, synthetic seed data, and real database integration tests.
 - Email/password login, short-lived JWTs, current identity, and server-authorized ticket details/events. Requester responses exclude internal messages and events.
 - Five explicitly activated synthetic demo accounts; credentials exist only in the ignored local `.env`. No public registration or role-editing API.
 - Ticket creation, authorized lists/filters/pagination, assignment, replies, status/archive changes, version conflicts, transactional events, persistent idempotency, manager audit queries, and redacted JSON request logs.
 - Role-scoped business forms, a manager-only active-agent directory, retained conflict drafts, duplicate-submit guards and same-request recovery after uncertain write results; see [form policy](docs/forms.md).
+- Repeatable Vitest/Testing Library component tests and Playwright three-role workflows in desktop/narrow viewports against an isolated real PostgreSQL API; see [testing guide](docs/testing.md).
 - M0 permission, state, data model, API, and data policy drafts; S01-S27 milestone checklist.
 
 ## Run locally
@@ -59,13 +60,17 @@ npm run build
 npm run test:api
 npm run test:query
 npm run test:writes
+npm run test:types
+npm run test:components
+npx playwright install chromium
+npm run test:e2e
 ```
 
-The S08 acceptance run passed **173 backend tests with zero skips**; see [audit evidence](docs/evidence/2026-10-22-audit-verification.md). Frontend clean installation and production build passed. The English conversion has its own [verification record](docs/evidence/2026-10-22-english-repository.md). The test helper loads local configuration and prepares a dedicated test database. Running pytest without `TEST_DATABASE_URL` explicitly skips integration tests; skips do not count as database verification. S09 separately passed 173 backend tests, 17 API-client tests, clean install/build, and real browser role/session/error checks; see [frontend evidence](docs/evidence/2026-10-27-frontend-foundation.md). S10 additionally passed 10 query tests, clean install/build, and real multi-page/filter/cache-revalidation browser checks: [S10 evidence](docs/evidence/2026-10-27-query-cache.md). The full component/E2E suite remains S12 work.
+The S08 acceptance run passed **173 backend tests with zero skips**; see [audit evidence](docs/evidence/2026-10-22-audit-verification.md). Frontend clean installation and production build passed. The English conversion has its own [verification record](docs/evidence/2026-10-22-english-repository.md). The test helper loads local configuration and prepares a dedicated test database. Running pytest without `TEST_DATABASE_URL` explicitly skips integration tests; skips do not count as database verification. S09 separately passed 173 backend tests, 17 API-client tests, clean install/build, and real browser role/session/error checks; see [frontend evidence](docs/evidence/2026-10-27-frontend-foundation.md). S10 additionally passed 10 query tests, clean install/build, and real multi-page/filter/cache-revalidation browser checks: [S10 evidence](docs/evidence/2026-10-27-query-cache.md). S10 deferred component/E2E regression to S12; the later S12 execution is recorded separately below.
 
 ## Database and migrations
 
-S11 passed **177 backend tests with zero skips and 34 frontend tests**, plus clean installation/build and real browser write/conflict/retry checks. See [S11 evidence](docs/evidence/2026-10-27-ticket-forms.md). Drafts remain page/session memory only; complete component/E2E coverage is the next stage.
+S11 passed **177 backend tests with zero skips and 34 frontend tests**, plus clean installation/build and manual browser checks: [S11 evidence](docs/evidence/2026-10-27-ticket-forms.md). S12 newly passed **177 backend, 46 client/component and 10 E2E tests**, test-source type checking, clean installation and production build: [S12 evidence](docs/evidence/2026-10-27-frontend-regression.md). Drafts remain page/session memory only; remote CI and broad browser/accessibility coverage remain unverified.
 
 The root `.env.example` is the local configuration template. The current machine already has a generated `.env`; do not overwrite it or casually change the existing database password.
 
@@ -91,7 +96,7 @@ The helper checks the engine first and starts Docker Desktop through Windows Exp
 |---|---|---|
 | M0 | Permissions, states, ER model, API, data modes | Drafted; consistency review pending |
 | M1 | Database, authentication, three-role ticket API, audit | S05-S08 locally verified; remote CI/cloud later |
-| M2 | React business pages, caching, component tests, E2E | S09-S11 locally verified; S12 planned |
+| M2 | React business pages, caching, component tests, E2E | S09-S12 locally verified; broader coverage/remote CI later |
 | M3 | Knowledge versions, retrieval, AI jobs, citations, human review | Planned |
 | M4 | SQL/AI evaluation, Compose, recovery, complete CI | Planned |
 | M5 | Azure, IaC, observability, release rollback, portfolio evidence | Planned |
@@ -114,6 +119,7 @@ Tasks, dependencies, acceptance, and next steps live in [progress](docs/progress
 - [Frontend sessions, pages, proxy, and browser fixtures](docs/frontend.md)
 - [Query cache, filters, and pagination policy](docs/query-cache.md)
 - [Business forms and safe write recovery](docs/forms.md)
+- [Component tests and isolated browser regression](docs/testing.md)
 - [GitHub setup and commit policy](docs/git-workflow.md)
 - [Foundation decision](docs/adr/0001-foundation-and-scope.md)
 

@@ -1,4 +1,4 @@
-# S09-S11: Typed ticket pages, query lifecycle and forms
+# S09-S12: Typed ticket pages, forms and regression tests
 
 Date: 2026-10-27 (Australia/Perth). [S09 evidence](evidence/2026-10-27-frontend-foundation.md); [S10 cache policy/evidence](query-cache.md).
 
@@ -70,8 +70,12 @@ npm run build
 npm run test:api
 npm run test:query
 npm run test:writes
+npm run test:types
+npm run test:components
+npx playwright install chromium
+npm run test:e2e
 ```
 
 The dependency-free Node API suite checks credentials/URL boundaries, DTO validation, requester projection, error redaction/status/request IDs, cursor encoding, cancellation, timeouts, and network failure. CI is configured to run it, but a configuration edit is not remote CI verification. There were no dependency changes in S09. S10 pins @tanstack/react-query 5.105.0 and updates package-lock.json; its10 query tests use real QueryClient/QueryObserver behavior.
 
-Actual browser checks are recorded separately from unit tests. S12 still owns a persisted Playwright/RTL regression suite and broad browser coverage. Desktop-wide, cross-browser, full keyboard/screen-reader, and WCAG conformance are not claimed from the narrow-view smoke check.
+Actual browser checks are recorded separately from unit tests. S12 now adds12 rendered-component cases and10 real-API Playwright cases across desktop/narrow viewports: see [test setup and ownership](testing.md) and [execution evidence](evidence/2026-10-27-frontend-regression.md). Cross-browser, full keyboard/screen-reader and WCAG conformance are not claimed from these selected regressions.

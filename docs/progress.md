@@ -2,7 +2,7 @@
 
 Updated: 2026-10-27 (Australia/Perth).
 
-States: planned = unimplemented; drafted = design only; implemented = artifacts exist; verified = actual execution evidence. M1 S05-S08 and M2 S09-S11 pages/cache/forms are locally verified. S12 remains planned.
+States: planned = unimplemented; drafted = design only; implemented = artifacts exist; verified = actual execution evidence. M1 S05-S08 and M2 S09-S12 pages/cache/forms/component/E2E are locally verified. M3 starts at S13.
 
 ## Delivery history
 
@@ -28,6 +28,8 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 
 - S11 implemented: role/state-scoped create/reply/assignment/status/priority/archive forms, manager-only active-agent directory, exact-payload idempotent retries, retained draft/version review, duplicate guards, mutation401 expiry and unavailable-selection handling. See [form policy](forms.md).
 - S11 verified on 2026-10-27:177 real-PostgreSQL tests,17 API/11 query-mutation/6 write tests, clean install/build, real two-session reply/assignment conflicts and preserved drafts, agent/manager workflows, lost committed-response recovery, double clicks, unavailable targets and measured390x844 form/keyboard focus. See [new execution evidence](evidence/2026-10-27-ticket-forms.md). Full component/E2E/browser/accessibility coverage remains S12.
+- S12 implemented: pinned Vitest/jsdom/Testing Library/Playwright,12 component regressions, two viewport projects with five whole-system scenarios, test-source type checking, an owned API/schema runner, CI commands and safe report policy. See [testing guide](testing.md) and [ADR0008](adr/0008-component-and-isolated-browser-tests.md).
+- S12 verified:177 real-PostgreSQL backend tests,46 client/component tests and10 Chromium E2E cases passed; clean install/type checks/build passed. The final browser run took20.2s, covered1280x800 and390x844 without automatic retries, and removed its owned schema. An intentionally invalid project returned the expected failure and also cleaned up; final schema count0/no test listeners. See [new execution evidence](evidence/2026-10-27-frontend-regression.md). Remote CI/Linux, other browser engines and broad accessibility remain unverified.
 
 | ID | Milestone | Deliverable/acceptance | Status | Dependencies |
 |---|---|---|---|---|
@@ -42,7 +44,7 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 | S09 | M2 | Typed API/login/list/details/four request states | Locally verified; full component/E2E suite remains S12 | S06,S07 |
 | S10 | M2 | TanStack Query/pagination/filters/invalidation/user cleanup | Locally verified; full component/E2E remains S12 | S09 |
 | S11 | M2 | Forms/duplicate sends/keyboard/narrow screens | Locally verified; broad component/E2E/accessibility S12 | S10 |
-| S12 | M2 | Vitest/RTL/Playwright three-role flows | Planned | S11 |
+| S12 | M2 | Vitest/RTL/Playwright three-role flows | Locally verified; remote CI and broader browser/accessibility coverage later | S11 |
 | S13 | M3 | Immutable knowledge versions/publication/scopes | Planned | S05,S06 |
 | S14 | M3 | Keyword baseline/persistent vectors/model-dimension versions | Planned | S13 |
 | S15 | M3 | Provider/timeouts/schema/error classes | Planned | S14 |
@@ -59,14 +61,14 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 | S26 | M5 | Release/app rollback/independent data restore | Planned | S25 |
 | S27 | M5 | README/ADRs/video/measurements/contribution evidence | Planned | S20,S21,S23,S26 |
 
-## Next: S12 component and E2E regression
+## Next: S13 immutable knowledge versions and authorized publication
 
-1. Add pinned Vitest/React Testing Library and Playwright with lock updates, using synthetic owned test data and actual role/object authorization.
-2. Persist rendered-form tests for required/invalid input, double submits, retained drafts during refetch409, exact-body retries after ambiguous success and late responses after logout. Include unavailable-agent selection and mutation401.
-3. Automate three-role create/assign/work/reply/resolve/reopen/close/archive flows, requester internal-note isolation, forbidden-object URLs and concurrent updates against real PostgreSQL.
-4. Cover desktop/narrow widths, keyboard focus, error announcements and loading/empty/error/success views. A smoke screenshot is not a complete accessibility audit.
-5. Keep existing API/query/write suites, documented memory-only draft limits and isolated fixture cleanup. S11 adds test-only delayed writes/lost acknowledgements; these are not production failure flags.
-6. Continue detailed English commit notes and evidence with the supplied Maxwell identity. Remote CI, Azure and AI execution remain independently unverified milestones.
+1. Define logical articles, immutable version IDs, draft/published/archive semantics and role-based public/internal knowledge scope before building retrieval or AI.
+2. Add an incremental Alembic migration and manager-only creation/publication operations with explicit concurrency/idempotency and audit behavior. Preserve existing ticket data and historical migrations.
+3. Add only synthetic/licensed knowledge content, with source/version provenance. Published citations must remain traceable to immutable versions even when a newer version is published.
+4. Verify publication permissions, unauthorized draft/internal reads, version immutability, superseded/archive behavior and migration preservation against real PostgreSQL. Retrieval/index/model jobs remain S14 onward.
+5. Preserve the S12 component/E2E commands and owned fixture cleanup. New authentication or ticket changes should keep those regressions passing.
+6. Continue detailed English commit notes and execution evidence with the supplied Maxwell identity. Remote CI, Azure and AI execution remain independently unverified milestones.
 
 Auth parameters are fixed in auth.md/ADR0003. Embedding/model choices (S14/S15), worker parameters (S16), and Azure region/pricing/resources/shared throttling (S24) remain open.
 

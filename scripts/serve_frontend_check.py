@@ -7,6 +7,7 @@ Ctrl+C stops the API and removes only the random schema owned by this process.
 """
 
 from pathlib import Path
+from contextlib import contextmanager
 import argparse
 import asyncio
 import sys
@@ -43,6 +44,13 @@ def main():
     parser.add_argument('--lose-first-write-response', action='store_true', help='Return a test-only 503 after the first successful ticket write commits')
     parser.add_argument('--write-delay-ms', type=int, default=0, choices=range(0, 2001), metavar='0..2000')
     args = parser.parse_args()
+    with browser_fixture(args) as app:
+        uvicorn.run(app, host='127.0.0.1', port=8765, proxy_headers=False, access_log=False)
+
+
+@contextmanager
+def browser_fixture(args):
+    """Own one disposable schema for a manual server or automated test runner."""
     configured = load_settings().database_url
     if not configured:
         raise SystemExit('Configure the local database first')
@@ -81,7 +89,7 @@ def main():
                 created_ticket = create_ticket(session, synthetic_id('requester-a'), TicketCreate(title=f'[S10 browser] Pagination sample {index:02d}', body='Synthetic pagination and filtering fixture.'), f'fixture-page-{index}')
                 if index % 2:
                     patch_ticket(session, synthetic_id('manager'), created_ticket.body['id'], TicketPatch(expected_version=1, priority='high'), f'fixture-priority-{index}')
-        print('S09 isolated fixture API: http://127.0.0.1:8765', flush=True)
+        print('Created an isolated synthetic browser fixture schema.', flush=True)
         print('Synthetic accounts: requester-a, requester-b, agent-a, agent-b, manager @example.invalid', flush=True)
         print('Use the public test-only password documented in this script; no local credentials are printed.', flush=True)
         app = create_app(Settings(jwt_secret='S09-test-only-signing-secret-' * 3, access_token_minutes=args.session_minutes), engine=engine)
@@ -108,7 +116,7 @@ def main():
                     await asyncio.sleep(args.read_delay_ms / 1000)
                 return response
         print(f'Fixture sessions last {args.session_minutes} minute(s); normal application configuration is unchanged.', flush=True)
-        uvicorn.run(app, host='127.0.0.1', port=8765, proxy_headers=False, access_log=False)
+        yield app
     finally:
         if engine is not None:
             engine.dispose()
