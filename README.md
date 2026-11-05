@@ -2,7 +2,7 @@
 
 An AI-assisted ticket and knowledge collaboration platform for a fictional software support team. This portfolio project demonstrates full-stack development, authorization, data consistency, AI evaluation, and eventual Azure delivery.
 
-**Current stage: M3 S13 locally verified: immutable knowledge versions, manager publication/archive and current-scope history access. M1/M2 ticket workflows and regressions remain verified. Next: S14 retrieval. AI generation and cloud deployment remain planned.**
+**Current stage: M3 S14 locally verified: authorized keyword and vector retrieval over immutable knowledge versions. Next: S15 generation provider boundaries.**
 
 The original requirements are preserved in an English translation of the [project brief](docs/planning/project-brief.md). Its planning-only statements describe the archived starting point. The current local repository is `D:\SupportOps AI`.
 
@@ -12,7 +12,7 @@ The original requirements are preserved in an English translation of the [projec
 - FastAPI `/health` for process liveness and `/ready` for database connectivity, migration version, and authentication configuration; unavailable dependencies return 503.
 - React/TypeScript/Vite login, role-scoped ticket list/details, public/internal conversation, staff activity, and loading/empty/error/success views; see [frontend guide](docs/frontend.md).
 - Exact dependency versions, `uv.lock`, and `package-lock.json`; TanStack React Query 5.105.0 provides per-session cache lifecycle and current-access revalidation.
-- GitHub Actions configuration for PostgreSQL backend tests, frontend build, protocol/component tests and isolated browser regression. Remote CI results have not been verified.
+- GitHub Actions configuration for PostgreSQL backend tests, frontend build, protocol/component tests and isolated browser regression. The workflow passed on the [browser synchronization fix](docs/evidence/2026-10-27-remote-ci.md).
 - PostgreSQL 17.11 development container, image digest and loopback port pinned; persistence across stop/start verified.
 - Four foundational business tables plus idempotency and audit tables, Alembic migrations, synthetic seed data, and real database integration tests.
 - Email/password login, short-lived JWTs, current identity, and server-authorized ticket details/events. Requester responses exclude internal messages and events.
@@ -20,7 +20,7 @@ The original requirements are preserved in an English translation of the [projec
 - Ticket creation, authorized lists/filters/pagination, assignment, replies, status/archive changes, version conflicts, transactional events, persistent idempotency, manager audit queries, and redacted JSON request logs.
 - Role-scoped business forms, a manager-only active-agent directory, retained conflict drafts, duplicate-submit guards and same-request recovery after uncertain write results; see [form policy](docs/forms.md).
 - Repeatable Vitest/Testing Library component tests and Playwright three-role workflows in desktop/narrow viewports against an isolated real PostgreSQL API; see [testing guide](docs/testing.md).
-- Immutable knowledge snapshots with provenance/hashes, manager draft/publication/archive APIs, support/management scopes, transactional knowledge audit and four draft-first synthetic fixtures; see [knowledge guide](docs/knowledge.md). Knowledge UI and retrieval remain planned.
+- Immutable knowledge snapshots with provenance/hashes, manager draft/publication/archive APIs, support/management scopes, transactional knowledge audit and four draft-first synthetic fixtures; see [knowledge guide](docs/knowledge.md). See also [authorized keyword and vector retrieval](docs/retrieval.md).
 - M0 permission, state, data model, API, and data policy drafts; S01-S27 milestone checklist.
 
 ## Run locally
@@ -71,7 +71,7 @@ The S08 acceptance run passed **173 backend tests with zero skips**; see [audit 
 
 ## Database and migrations
 
-S11 passed **177 backend tests with zero skips and 34 frontend tests**, plus clean installation/build and manual browser checks: [S11 evidence](docs/evidence/2026-10-27-ticket-forms.md). S12 newly passed **177 backend, 46 client/component and 10 E2E tests**, test-source type checking, clean installation and production build: [S12 evidence](docs/evidence/2026-10-27-frontend-regression.md). Drafts remain page/session memory only; remote CI and broad browser/accessibility coverage remain unverified.
+S11 passed **177 backend tests with zero skips and 34 frontend tests**, plus clean installation/build and manual browser checks: [S11 evidence](docs/evidence/2026-10-27-ticket-forms.md). S12 newly passed **177 backend, 46 client/component and 10 E2E tests**, test-source type checking, clean installation and production build: [S12 evidence](docs/evidence/2026-10-27-frontend-regression.md). Drafts remain page/session memory only. Broad browser/accessibility coverage remains unverified.
 
 S13 newly passed **226 backend tests with zero skips, 46 client/component tests and 12 E2E cases**, plus clean installation/type checks/build. Development migration0003->0004 preserved existing rows, and four synthetic knowledge drafts imported twice without duplication: [S13 evidence](docs/evidence/2026-10-27-knowledge-versioning.md).
 
@@ -83,7 +83,7 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 docker compose up -d db
 ```
 
-On 2026-10-21, Docker recovery, empty-database migration, repeatable seeding, real integration tests, and stop/start persistence were verified; see [PostgreSQL evidence](docs/evidence/2026-10-21-postgresql-verification.md). See [database operations](docs/database.md) for migrations and testing. Full application Compose belongs to S22; pgvector retrieval belongs to S14.
+On 2026-10-21, Docker recovery, empty-database migration, repeatable seeding, real integration tests, and stop/start persistence were verified; see [PostgreSQL evidence](docs/evidence/2026-10-21-postgresql-verification.md). See [database operations](docs/database.md) for migrations and testing. S14 passed 262 backend tests, 46 client/component tests, and 12 E2E cases, plus a separate real Ollama and pgvector run. See [S14 evidence](docs/evidence/2026-10-27-retrieval.md). Full application Compose belongs to S22.
 
 If starting Docker from the desktop agent encounters the socket access issue again:
 
@@ -98,9 +98,9 @@ The helper checks the engine first and starts Docker Desktop through Windows Exp
 | Milestone | Goal | Status |
 |---|---|---|
 | M0 | Permissions, states, ER model, API, data modes | Drafted; consistency review pending |
-| M1 | Database, authentication, three-role ticket API, audit | S05-S08 locally verified; remote CI/cloud later |
-| M2 | React business pages, caching, component tests, E2E | S09-S12 locally verified; broader coverage/remote CI later |
-| M3 | Knowledge versions, retrieval, AI jobs, citations, human review | S13 locally verified; S14-S19 planned |
+| M1 | Database, authentication, three-role ticket API, audit | S05-S08 locally verified |
+| M2 | React business pages, caching, component tests, E2E | S09-S12 locally verified; Chromium workflow passed on the CI fix |
+| M3 | Knowledge versions, retrieval, AI jobs, citations, human review | S13-S14 locally verified; S15-S19 planned |
 | M4 | SQL/AI evaluation, Compose, recovery, complete CI | Planned |
 | M5 | Azure, IaC, observability, release rollback, portfolio evidence | Planned |
 

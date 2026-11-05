@@ -34,6 +34,11 @@ test("real knowledge publication keeps immutable versions and rechecks historica
     license_note: "Original synthetic test content; no external data.",
   };
   const first = await post("/articles", content);
+  await post(`/articles/${first.id}/index`, {
+    version_id: first.version.id,
+    expected_revision: 1,
+    mode: "keyword",
+  });
   const articlePath = `/api/knowledge/articles/${first.id}`,
     versionPath = `/api/knowledge/versions/${first.version.id}`;
   expect((await request.get(versionPath, { headers: agent })).status()).toBe(
@@ -50,6 +55,22 @@ test("real knowledge publication keeps immutable versions and rechecks historica
   expect((await request.get(versionPath, { headers: agent })).status()).toBe(
     200,
   );
+  const baseline = await request.get(
+    "/api/knowledge/search?q=source&mode=keyword",
+    { headers: agent },
+  );
+  expect(baseline.status()).toBe(200);
+  expect((await baseline.json()).items[0]).toMatchObject({
+    version_id: first.version.id,
+    text: content.body,
+  });
+  expect(
+    (
+      await request.get("/api/knowledge/search?q=source", {
+        headers: requester,
+      })
+    ).status(),
+  ).toBe(403);
   const restricted = await post("/articles", {
     ...content,
     article_id: first.id,
@@ -71,6 +92,10 @@ test("real knowledge publication keeps immutable versions and rechecks historica
   expect((await request.get(versionPath, { headers: agent })).status()).toBe(
     404,
   );
+  const restrictedSearch = await request.get("/api/knowledge/search?q=source", {
+    headers: agent,
+  });
+  expect((await restrictedSearch.json()).items).toEqual([]);
   const newer = await post("/articles", {
     ...content,
     article_id: first.id,

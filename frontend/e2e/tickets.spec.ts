@@ -254,8 +254,11 @@ test("concurrent assignments and replies preserve drafts until explicit version 
   await manager.getByLabel("New priority").selectOption("urgent");
   // A previous success notice can remain visible until React renders the new pending state.
   // Synchronize the competing write on its actual HTTP result, not that old notice.
-  const prioritySaved = manager.waitForResponse(response =>
-    response.request().method() === "PATCH" && response.url().endsWith(`/api/tickets/${created.id}`));
+  const prioritySaved = manager.waitForResponse(
+    (response) =>
+      response.request().method() === "PATCH" &&
+      response.url().endsWith(`/api/tickets/${created.id}`),
+  );
   await manager
     .getByRole("button", { name: "Change priority", exact: true })
     .click();

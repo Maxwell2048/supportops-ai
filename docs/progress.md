@@ -1,8 +1,8 @@
 # Progress and staged tasks
 
-Updated: 2026-10-27 (Australia/Perth).
+Updated: 2026-11-05 (Australia/Perth).
 
-States: planned = unimplemented; drafted = design only; implemented = artifacts exist; verified = actual execution evidence. M1 S05-S08, M2 S09-S12 and M3 S13 knowledge versioning are locally verified. Retrieval begins at S14.
+States: planned = unimplemented; drafted = design only; implemented = artifacts exist; verified = actual execution evidence. M1 S05-S08, M2 S09-S12 and M3 S13-S14 are locally verified. Generation provider boundaries begin at S15.
 
 ## Delivery history
 
@@ -47,9 +47,9 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 | S09 | M2 | Typed API/login/list/details/four request states | Locally verified; full component/E2E suite remains S12 | S06,S07 |
 | S10 | M2 | TanStack Query/pagination/filters/invalidation/user cleanup | Locally verified; full component/E2E remains S12 | S09 |
 | S11 | M2 | Forms/duplicate sends/keyboard/narrow screens | Locally verified; broad component/E2E/accessibility S12 | S10 |
-| S12 | M2 | Vitest/RTL/Playwright three-role flows | Locally verified; remote CI and broader browser/accessibility coverage later | S11 |
-| S13 | M3 | Immutable knowledge versions/publication/scopes | Locally verified API/data; knowledge UI and retrieval later | S05,S06 |
-| S14 | M3 | Keyword baseline/persistent vectors/model-dimension versions | Planned | S13 |
+| S12 | M2 | Vitest/RTL/Playwright three-role flows | Locally verified; remote CI passed on the browser synchronization fix | S11 |
+| S13 | M3 | Immutable knowledge versions/publication/scopes | Locally verified API/data; retrieval added in S14 | S05,S06 |
+| S14 | M3 | Keyword baseline/persistent vectors/model-dimension versions | Locally verified with real Ollama and pgvector | S13 |
 | S15 | M3 | Provider/timeouts/schema/error classes | Planned | S14 |
 | S16 | M3 | Durable jobs/leases/idempotency/restart recovery | Planned | S15 |
 | S17 | M3 | Contiguous citation checks/evidence-free refusal | Planned | S15 |
@@ -64,17 +64,15 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 | S26 | M5 | Release/app rollback/independent data restore | Planned | S25 |
 | S27 | M5 | README/ADRs/video/measurements/contribution evidence | Planned | S20,S21,S23,S26 |
 
-## Next: S14 authorized retrieval and persistent vectors
+## S14 retrieval
 
-1. Build deterministic immutable chunks with version IDs, ordinal/source offsets and hashes. Only current published, non-archived authorized snapshots can enter retrieval; old readable citations are not current candidates.
-2. Establish a reproducible keyword baseline before claiming vector quality. Apply current scope before ranking/limits and exclude drafts/management data from agent results.
-3. Verify a compatible embedding provider/model, license, dimension and normalization policy, then store versioned representations and real persistent vectors. Label synthetic/mock execution separately from actual embeddings.
-4. Add ingestion/reindex idempotency and publication/archive/scope-change regression so stale vectors cannot bypass current SQL authorization. Do not feed retrieved instructions into permission/business decisions.
-5. Keep all existing backend, component and E2E checks passing; record measured retrieval behavior and limits without inventing evaluation scores. The corpus currently has four synthetic examples; labels/holdout evaluation remain S21.
-6. Continue detailed English commit notes and execution evidence with the supplied Maxwell identity. AI generation, cloud and remote CI execution remain independently unverified.
+- Implemented: deterministic version chunks, transactional representation manifests, manager indexing, current authorization before ranking, keyword search, and exact vector search with pinned local embeddings. See [retrieval](retrieval.md) and [ADR 0010](adr/0010-versioned-retrieval-and-local-embeddings.md).
+- Verified: 262 backend tests with zero skips, 46 client/component tests, 12 browser cases, and real 384-dimensional Ollama embeddings persisted in pgvector. The development migration preserved existing rows and draft visibility. See [execution evidence](evidence/2026-10-27-retrieval.md).
+- Remote CI: the earlier S13 browser synchronization fix passed both jobs. See [exact-run evidence](evidence/2026-10-27-remote-ci.md). The S14 run is checked independently after publication.
 
-Auth parameters are fixed in auth.md/ADR0003. Embedding/model choices (S14/S15), worker parameters (S16), and Azure region/pricing/resources/shared throttling (S24) remain open.
+## Next: S15 generation provider boundaries
 
+Define the structured generation contract, mock and local provider adapters, bounded timeouts, schema validation and typed failures. Keep provider output untrusted. Durable jobs and citation validation follow in S16 and S17.
 ## Stage evidence template
 
 Artifacts -> actual commands -> results/environment -> unverified limitations -> next step. Failed tests cannot be hidden behind an implemented label. Drafts do not substitute for database/browser acceptance.

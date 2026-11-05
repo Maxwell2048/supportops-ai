@@ -22,8 +22,10 @@ def pg_engine():
     schema = "test_" + uuid4().hex
     admin = create_engine(url, hide_parameters=True, connect_args={"connect_timeout": 3})
     with admin.begin() as connection:
+        if connection.scalar(text("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('users','tickets','knowledge_articles','knowledge_versions')")):
+            pytest.fail("The dedicated test database public schema must not contain business tables")
         connection.execute(text(f'CREATE SCHEMA "{schema}"'))
-    engine = create_engine(url, hide_parameters=True, connect_args={"connect_timeout": 3, "options": f"-csearch_path={schema}"})
+    engine = create_engine(url, hide_parameters=True, connect_args={"connect_timeout": 3, "options": f"-csearch_path={schema},public"})
     try:
         # Exercise the real historical migration, never metadata.create_all().
         with engine.begin() as connection:

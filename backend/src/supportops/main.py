@@ -22,7 +22,7 @@ class ReadinessResponse(BaseModel):
     reason: str
 
 
-def create_app(settings: Settings | None = None, *, engine: Engine | None = None) -> FastAPI:
+def create_app(settings: Settings | None = None, *, engine: Engine | None = None, embedding_provider=None) -> FastAPI:
     settings = settings if settings is not None else load_settings()
     owns_engine = engine is None
     engine = engine if engine is not None else (make_engine(settings.database_url) if settings.database_url else None)
@@ -37,6 +37,8 @@ def create_app(settings: Settings | None = None, *, engine: Engine | None = None
     app.state.settings = settings
     app.state.engine = engine
     app.state.login_limiter = LoginLimiter()
+    from supportops.embeddings import OllamaEmbedding
+    app.state.embedding_provider = embedding_provider if embedding_provider is not None else OllamaEmbedding(settings.embedding_url)
     install_error_handlers(app)
     app.include_router(router)
     app.include_router(knowledge_router)

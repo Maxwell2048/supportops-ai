@@ -29,8 +29,9 @@ Implemented: login/me, ticket create/list/detail/PATCH/messages/events, manager 
 | POST /api/tickets/{id}/analysis-jobs | expected_version | Planned: 202 job_id,status; agent/manager |
 | GET /api/analysis-jobs/{id} | None | Planned: 200 status/error/authorized suggestion; current ticket scope |
 | POST /api/suggestions/{id}/review | expected_version,decision,edited_body? | Planned: 200 review,message_id?,ticket_version; agent/manager |
-| GET /api/knowledge/search | q(1-500),mode(keyword/vector),limit(1-20) | Planned: 200 published authorized version chunks |
+| GET /api/knowledge/search | q(1-500),mode(keyword/vector),limit(1-20) | 200 currently published authorized version chunks; staff only |
 | POST /api/knowledge/articles | title,body,scope,source_kind,source_reference,license_note; article_id + expected_revision for another version | 201 immutable draft/version; manager; [knowledge contract](knowledge.md) |
+| POST /api/knowledge/articles/{id}/index | version_id,expected_revision,mode; Idempotency-Key | 200 representation receipt; manager only; [retrieval contract](retrieval.md) |
 | POST /api/knowledge/articles/{id}/publish | version_id,expected_revision | 200 publication receipt; manager; id is logical article ID |
 | POST /api/knowledge/articles/{id}/archive | current published version_id,expected_revision | 200 archive receipt; manager |
 | GET /api/knowledge/articles | limit,cursor | 200 authorized summaries; manager latest snapshots / agent current support publications |
@@ -43,8 +44,8 @@ Implemented: login/me, ticket create/list/detail/PATCH/messages/events, manager 
 | GET /health | None | 200 process liveness; public |
 | GET /ready | None | 200 ready / 503 missing config, unreachable DB, or schema mismatch |
 
-Current readiness requires 0004_knowledge_versions and JWT_SECRET. Login passwords accept 1-128 characters; emails are trimmed/lowercased. Default token lifetime: 900 seconds. Reject unknown fields and null characters. See [auth](auth.md), [ticket behavior](tickets.md) and [knowledge](knowledge.md).
+Current readiness requires 0005_knowledge_retrieval and JWT_SECRET. Login passwords accept 1-128 characters; emails are trimmed/lowercased. Default token lifetime: 900 seconds. Reject unknown fields and null characters. See [auth](auth.md), [ticket behavior](tickets.md) and [knowledge](knowledge.md).
 
 Priorities: low/normal/high/urgent. Planned suggestion categories: access/billing/bug/how_to/other; suggestions do not automatically modify tickets. Planned decisions: accepted/edited/rejected; edited requires nonempty edited_body, other decisions forbid it. The server chooses requester_id, author_id, reviewer_id, created_at, and role.
 
-PATCH and public_reply commit atomically; waiting_customer/resolved requires public_reply. Reopening reason becomes a public message. Use messages for ordinary conversation. expected_version is a strict positive integer. Explicit null assignee_id clears assignment; status/priority/archived reject null. Search covers original title/body only. Signed list cursors bind identity/role/filters/limit and cannot authenticate a session.
+PATCH and public_reply commit atomically; waiting_customer/resolved requires public_reply. Reopening reason becomes a public message. Use messages for ordinary conversation. expected_version is a strict positive integer. Explicit null assignee_id clears assignment; status/priority/archived reject null. Ticket search covers original title/body only. Signed list cursors bind identity/role/filters/limit and cannot authenticate a session.

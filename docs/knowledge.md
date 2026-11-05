@@ -27,7 +27,7 @@ Publishing replaces the pointer and clears article archive. Managers may deliber
 
 This deliberately preserves the established support/management scopes. It does not introduce requester-public knowledge. Every request loads current active identity/role. Writes re-read/lock the current manager before checking idempotency, and serialize on the article row. Historical reference reads check both the historical version's scope and the current publication's scope in the authorization SQL. A stable version UUID cannot bypass newly restricted access. Restoring a support publication may restore access to previously published support history; management snapshots stay hidden.
 
-active_versions in knowledge_service.py defines the current-publication eligibility relation for S14 retrieval. Historical read permission is broader than current retrieval eligibility: superseded versions remain traceable for authorized history but are not current search candidates. Search, chunks, vectors and suggestions are not implemented in S13.
+active_versions in knowledge_service.py defines the current-publication eligibility relation for S14 retrieval. Historical read permission is broader than current retrieval eligibility: superseded versions remain traceable for authorized history but are not current search candidates. S14 adds [search, chunks and versioned vectors](retrieval.md).
 
 ## Endpoints and recovery
 
@@ -52,7 +52,7 @@ Article/version/event/idempotency updates share one transaction, committed by th
 
 ## Migration, immutability and seed data
 
-0004_knowledge_versions adds three tables, FK/check/unique constraints and PostgreSQL triggers rejecting UPDATE/DELETE/TRUNCATE of snapshots and knowledge audit. Article publication pointers remain mutable through the service. Trigger protection is for ordinary DML, not privileged schema administration; migrations/backup/recovery remain operational controls. No historical migrations were edited. Readiness now expects0004.
+0004_knowledge_versions adds three tables, FK/check/unique constraints and PostgreSQL triggers rejecting UPDATE/DELETE/TRUNCATE of snapshots and knowledge audit. Article publication pointers remain mutable through the service. Trigger protection is for ordinary DML, not privileged schema administration; migrations/backup/recovery remain operational controls. No historical migrations were edited. S13 readiness expected 0004. Current readiness expects 0005.
 
 From backend, after the normal local database/auth setup:
 

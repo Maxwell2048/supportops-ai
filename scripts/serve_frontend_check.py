@@ -64,9 +64,11 @@ def browser_fixture(args):
     created = False
     try:
         with admin.begin() as connection:
+            if connection.scalar(text("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('users','tickets','knowledge_articles','knowledge_versions')")):
+                raise RuntimeError('The dedicated browser test database public schema must not contain business tables')
             connection.execute(text(f'CREATE SCHEMA "{schema}"'))
         created = True
-        engine = create_engine(test_url, hide_parameters=True, connect_args={'connect_timeout': 3, 'options': f'-csearch_path={schema}'})
+        engine = create_engine(test_url, hide_parameters=True, connect_args={'connect_timeout': 3, 'options': f'-csearch_path={schema},public'})
         with engine.begin() as connection:
             config = Config(str(ROOT / 'backend' / 'alembic.ini'))
             config.attributes['connection'] = connection

@@ -4,7 +4,7 @@ UUID primary keys, timestamptz timestamps, no bodies in logs. This field summary
 
 On 2026-10-22, users/tickets/ticket_messages/ticket_events/idempotency_records/audit_events are verified with real PostgreSQL 17.11. Other tables and message suggestion_id remain designs. Users default inactive. Ticket events keep before/after changes and one aggregate event/version. Services check current role/active/scope transactionally.
 
-On 2026-10-27, S13 additionally verified knowledge_articles/knowledge_versions/knowledge_events under0004. Chunks, jobs, suggestions and suggestion_id remain designs. Knowledge revisions and immutable snapshot numbers are separate; see [current execution](evidence/2026-10-27-knowledge-versioning.md).
+On 2026-10-27, S13 additionally verified knowledge_articles/knowledge_versions/knowledge_events under0004. S14 adds immutable knowledge_chunks, embedding_profiles, knowledge_embeddings and knowledge_indexes under 0005. See [retrieval](retrieval.md). Jobs, suggestions and suggestion_id remain designs. Knowledge revisions and immutable snapshot numbers are separate; see [current execution](evidence/2026-10-27-knowledge-versioning.md).
 
 ```mermaid
 erDiagram
