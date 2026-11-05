@@ -1,0 +1,7 @@
+feat(ai): define bounded generation provider contract
+
+I introduced a structured suggestion contract and separate failure categories for unavailable providers, timeouts, and invalid responses. I added a deterministic mock and a loopback Ollama adapter using structured output, bounded inputs, explicit timeouts, and safe error messages. Ticket and evidence are supplied as untrusted data.
+
+I verified ten provider boundary tests using simulated HTTP, the full PostgreSQL backend suite with 272 passing tests and no skips, and a clean frontend installation and production build. I restored the frontend dependencies after an interrupted installation. I recorded that local generation inference has not yet been verified.
+
+I left authorization to the future caller and retained citation authenticity, evidence-free refusal, durable jobs and human review for their planned stages. This code does not send replies or mutate tickets. I used AI assistance for implementation and validation.

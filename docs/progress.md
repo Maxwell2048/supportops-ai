@@ -50,7 +50,7 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 | S12 | M2 | Vitest/RTL/Playwright three-role flows | Locally verified; remote CI passed on the browser synchronization fix | S11 |
 | S13 | M3 | Immutable knowledge versions/publication/scopes | Locally verified API/data; retrieval added in S14 | S05,S06 |
 | S14 | M3 | Keyword baseline/persistent vectors/model-dimension versions | Locally verified with real Ollama and pgvector | S13 |
-| S15 | M3 | Provider/timeouts/schema/error classes | Planned | S14 |
+| S15 | M3 | Provider/timeouts/schema/error classes | Implemented; simulated provider verified, real inference pending | S14 |
 | S16 | M3 | Durable jobs/leases/idempotency/restart recovery | Planned | S15 |
 | S17 | M3 | Contiguous citation checks/evidence-free refusal | Planned | S15 |
 | S18 | M3 | Human review/atomic public reply/deduplication | Planned | S08,S16,S17 |
@@ -70,9 +70,9 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 - Verified: 262 backend tests with zero skips, 46 client/component tests, 12 browser cases, and real 384-dimensional Ollama embeddings persisted in pgvector. The development migration preserved existing rows and draft visibility. See [execution evidence](evidence/2026-10-27-retrieval.md).
 - Remote CI: the earlier S13 browser synchronization fix passed both jobs. See [exact-run evidence](evidence/2026-10-27-remote-ci.md). The S14 run is checked independently after publication.
 
-## Next: S15 generation provider boundaries
+## S15 generation provider boundaries
 
-Define the structured generation contract, mock and local provider adapters, bounded timeouts, schema validation and typed failures. Keep provider output untrusted. Durable jobs and citation validation follow in S16 and S17.
+Implemented the structured contract, mock and local adapters, timeouts and failure categories. Simulated HTTP tests and backend/frontend regressions passed. Real generation inference remains unverified. See [generation](generation.md) and [evidence](evidence/2026-11-05-generation.md). Durable jobs and citation validation follow in S16 and S17.
 ## Stage evidence template
 
 Artifacts -> actual commands -> results/environment -> unverified limitations -> next step. Failed tests cannot be hidden behind an implemented label. Drafts do not substitute for database/browser acceptance.
