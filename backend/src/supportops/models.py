@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, ForeignKeyConstraint, Index, Integer, String, Text, UniqueConstraint, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from pgvector.sqlalchemy import Vector
 
 
 class Base(DeclarativeBase):
@@ -194,4 +195,68 @@ class KnowledgeEvent(Base):
     result: Mapped[str] = mapped_column(String(16), server_default="success")
     request_id: Mapped[UUID] = mapped_column()
     changes: Mapped[dict] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class KnowledgeChunk(Base):
+    __tablename__ = "knowledge_chunks"
+    __table_args__ = (
+        UniqueConstraint("version_id", "chunker", "ordinal", name="uq_chunk_ordinal"),
+        CheckConstraint("ordinal >= 0 AND start_offset >= 0 AND end_offset > start_offset AND end_offset - start_offset = length(content)", name="ck_chunk_offsets"),
+        CheckConstraint("content_hash ~ '^[0-9a-f]{64}$' AND length(content) BETWEEN 1 AND 400", name="ck_chunk_content"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    version_id: Mapped[UUID] = mapped_column(ForeignKey("knowledge_versions.id", ondelete="RESTRICT"))
+    chunker: Mapped[str] = mapped_column(String(48))
+    ordinal: Mapped[int] = mapped_column(Integer)
+    start_offset: Mapped[int] = mapped_column(Integer)
+    end_offset: Mapped[int] = mapped_column(Integer)
+    content: Mapped[str] = mapped_column(Text)
+    content_hash: Mapped[str] = mapped_column(String(64))
+
+
+class EmbeddingProfile(Base):
+    __tablename__ = "embedding_profiles"
+    __table_args__ = (
+        UniqueConstraint("id", "dimensions", name="uq_profile_dimension"),
+        CheckConstraint("dimensions BETWEEN 1 AND 4096 AND provider IN ('ollama','mock')", name="ck_profile_dimensions"),
+        CheckConstraint("model_digest ~ '^[0-9a-f]{64}$' AND normalization = 'l2-v1'", name="ck_profile_spec"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    provider: Mapped[str] = mapped_column(String(16))
+    model: Mapped[str] = mapped_column(String(128))
+    model_digest: Mapped[str] = mapped_column(String(64))
+    dimensions: Mapped[int] = mapped_column(Integer)
+    normalization: Mapped[str] = mapped_column(String(24))
+    license_note: Mapped[str] = mapped_column(Text)
+
+
+class KnowledgeEmbedding(Base):
+    __tablename__ = "knowledge_embeddings"
+    __table_args__ = (
+        ForeignKeyConstraint(["profile_id", "dimensions"], ["embedding_profiles.id", "embedding_profiles.dimensions"], name="fk_embedding_profile_dimension", ondelete="RESTRICT"),
+        CheckConstraint("vector_dims(embedding) = dimensions AND abs(vector_norm(embedding) - 1) < 0.0001", name="ck_embedding_vector"),
+    )
+    chunk_id: Mapped[UUID] = mapped_column(ForeignKey("knowledge_chunks.id", ondelete="RESTRICT"), primary_key=True)
+    profile_id: Mapped[UUID] = mapped_column(primary_key=True)
+    dimensions: Mapped[int] = mapped_column(Integer)
+    embedding: Mapped[list[float]] = mapped_column(Vector())
+
+
+class KnowledgeIndex(Base):
+    __tablename__ = "knowledge_indexes"
+    __table_args__ = (
+        UniqueConstraint("version_id", "representation", name="uq_knowledge_representation"),
+        CheckConstraint("chunk_count > 0 AND representation ~ '^[0-9a-f]{64}$'", name="ck_index_representation"),
+        CheckConstraint("(mode = 'keyword' AND profile_id IS NULL) OR (mode = 'vector' AND profile_id IS NOT NULL)", name="ck_index_mode"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    version_id: Mapped[UUID] = mapped_column(ForeignKey("knowledge_versions.id", ondelete="RESTRICT"))
+    representation: Mapped[str] = mapped_column(String(64))
+    chunker: Mapped[str] = mapped_column(String(48))
+    mode: Mapped[str] = mapped_column(String(16))
+    profile_id: Mapped[UUID | None] = mapped_column(ForeignKey("embedding_profiles.id", ondelete="RESTRICT"))
+    chunk_count: Mapped[int] = mapped_column(Integer)
+    actor_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    request_id: Mapped[UUID] = mapped_column()
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

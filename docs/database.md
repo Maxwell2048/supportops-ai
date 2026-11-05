@@ -1,6 +1,6 @@
 # Local database and migrations
 
-S05 passed 19 tests; [historical evidence](evidence/2026-10-21-postgresql-verification.md). S08 passed 173 tests at0003_audit_events. S13 now expects0004_knowledge_versions and passed226 tests; [current migration/data-preservation evidence](evidence/2026-10-27-knowledge-versioning.md).
+S05 passed 19 tests; [historical evidence](evidence/2026-10-21-postgresql-verification.md). S08 passed 173 tests at0003_audit_events. S13 passed 226 tests at 0004_knowledge_versions. S14 expects 0005_knowledge_retrieval and passed 262 tests; see [S14 migration evidence](evidence/2026-10-27-retrieval.md).
 
 ## Prepare PostgreSQL
 
@@ -68,4 +68,4 @@ Tests execute historical migrations, model comparison, roundtrips, stale readine
 docker compose stop db
 ```
 
-A downgrade is not backup recovery. Prefer forward migrations, assess compatibility/backups first, and keep downgrade experiments inside isolated test schemas. Image availability does not prove pgvector extension/retrieval functionality; choose model/dimension in S14.
+A downgrade is not backup recovery. Prefer forward migrations, assess compatibility/backups first, and keep downgrade experiments inside isolated test schemas. Revision 0005 installs the shared vector extension in public. Isolated test schemas precede public on the search path and must use a dedicated database without public business tables. Downgrade leaves the shared extension installed. See [retrieval](retrieval.md).

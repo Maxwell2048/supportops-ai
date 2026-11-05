@@ -1,0 +1,9 @@
+feat(retrieval): add authorized keyword search and persistent versioned embeddings
+
+I added immutable knowledge chunks and representation manifests tied to exact article versions. I kept indexing separate from publication so managers can prepare a representation without changing what agents can see. I apply current publication and role scope before scoring or limiting results, and I include version and source provenance so later citation checks can identify the original text.
+
+I added a reproducible PostgreSQL keyword baseline and exact pgvector cosine search. I pinned the local Ollama model digest, dimension, normalization and license in the embedding profile. I validate provider responses, roll back incomplete indexing, and reuse complete representations on retries. I retained older representations for provenance while excluding them from current search after replacement or archive.
+
+I verified 262 backend tests with zero skips, 46 frontend client/component tests, 12 Chromium E2E cases, and a clean frontend install, type check and build. I upgraded development from 0004 to 0005 with existing rows and four unpublished drafts preserved. In a disposable schema I separately verified four real 384-dimensional vectors from Ollama against pgvector 0.8.7, read them after reopening database connections and confirmed archive exclusion. The initial cold call timed out safely and the same timeout passed on rerun. I recorded the exact previously verified remote CI fix separately and will check this commit's workflow after publication.
+
+I used synthetic content for execution. The three sample searches are functional checks. Formal relevance evaluation, performance claims, generation and cloud deployment remain outside this stage. I used AI assistance for implementation and verification.

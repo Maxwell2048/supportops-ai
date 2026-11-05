@@ -7,9 +7,22 @@ from fastapi.responses import JSONResponse
 from supportops import knowledge_service as service
 from supportops.dependencies import CurrentUser, DbSession
 from supportops.knowledge_schemas import KnowledgeArticleResponse, KnowledgeChange, KnowledgeCreate, KnowledgeEventPage, KnowledgePage, KnowledgeQuery, KnowledgeVersionResponse
+from supportops.retrieval_schemas import IndexCreate, IndexResponse, SearchQuery, SearchResponse
+from supportops import retrieval
 
 router = APIRouter(prefix="/api/knowledge", tags=["knowledge"])
 Key = Annotated[str, Header(alias="Idempotency-Key", min_length=1, max_length=128, pattern=r"^[A-Za-z0-9._:-]+$")]
+
+
+@router.get("/search", response_model=SearchResponse)
+def search(request: Request, user: CurrentUser, session: DbSession, query: Annotated[SearchQuery, Query()]):
+    return retrieval.search(session, user, query, request.app.state.embedding_provider)
+
+
+@router.post("/articles/{article_id}/index", response_model=IndexResponse)
+def index(article_id: UUID, payload: IndexCreate, request: Request, user: CurrentUser, session: DbSession, key: Key):
+    session.info["request_id"] = UUID(request.state.request_id)
+    return commit(session, retrieval.build_index(session, user.id, article_id, payload, key, request.app.state.embedding_provider))
 
 
 def commit(session, result):
