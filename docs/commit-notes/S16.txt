@@ -1,0 +1,9 @@
+feat(jobs): add persistent analysis jobs with fenced leases
+
+I added persistent analysis job records, current ticket authorization, version checks and idempotent creation. Job reads check current ticket access. I added a separate local mock worker that claims eligible jobs with database row locks, a fresh lease token and bounded attempts. Expired leases can be reclaimed, and renewal and final writes require the current unexpired token.
+
+I made completion and stored mock output transactional. I recheck the requesting actor and ticket version before and after generation, classify provider errors, and persist retry timing. Job responses contain status and safe errors while citation and human review work remains ahead.
+
+I verified 279 PostgreSQL backend tests with zero skips, including independent connection locking, retry exhaustion, expired token rejection, renewal, HTTP authorization and a separate worker process reclaiming a simulated expired lease. Frontend npm ci and build passed after transient file locks. I upgraded the local development database from 0005 to 0006 and checked that counts in 13 existing tables stayed unchanged.
+
+The worker uses a deterministic mock, does not retrieve knowledge and does not expose generated output. Real model inference, citation validation, human review, deployed operation and an actual crash during inference remain unverified. I used AI assistance for implementation and validation.

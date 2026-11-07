@@ -11,7 +11,7 @@ from supportops.models import TicketEvent, TicketMessage, User
 from supportops.schemas import EventResponse, LoginInput, MessageResponse, StaffTicketResponse, TicketResponse, TokenResponse, UserResponse
 from supportops.security import issue_token, require_auth_config, verify_password
 from supportops.schemas import MessageCreate, MessageWriteResponse, TicketCreate, TicketPage, TicketPatch, TicketQuery, TicketSummary
-from supportops import ticket_service
+from supportops import ticket_service, jobs
 from supportops.ticket_queries import list_tickets as query_tickets
 from supportops.audit_queries import list_audit_events
 from supportops.schemas import AuditPage, AuditQuery
@@ -107,3 +107,12 @@ def _events(session, ticket_id):
 def ticket_events(ticket_id: UUID, user: StaffUser, session: DbSession):
     visible_ticket(session, user, ticket_id)
     return _events(session, ticket_id)
+
+@router.post("/tickets/{ticket_id}/analysis-jobs", status_code=202, tags=["analysis"])
+def analysis_create(ticket_id: UUID, payload: jobs.JobCreate, user: CurrentUser, session: DbSession, key: IdempotencyKey):
+    return _commit_write(session, jobs.create_job(session, user.id, ticket_id, payload, key))
+
+
+@router.get("/analysis-jobs/{job_id}", tags=["analysis"])
+def analysis_read(job_id: UUID, user: CurrentUser, session: DbSession):
+    return jobs.read_job(session, user, job_id)

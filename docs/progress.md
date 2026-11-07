@@ -51,7 +51,7 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 | S13 | M3 | Immutable knowledge versions/publication/scopes | Locally verified API/data; retrieval added in S14 | S05,S06 |
 | S14 | M3 | Keyword baseline/persistent vectors/model-dimension versions | Locally verified with real Ollama and pgvector | S13 |
 | S15 | M3 | Provider/timeouts/schema/error classes | Implemented; simulated provider verified, real inference pending | S14 |
-| S16 | M3 | Durable jobs/leases/idempotency/restart recovery | Planned | S15 |
+| S16 | M3 | Durable jobs/leases/idempotency/restart recovery | Locally verified with mock worker; real crash and model inference pending | S15 |
 | S17 | M3 | Contiguous citation checks/evidence-free refusal | Planned | S15 |
 | S18 | M3 | Human review/atomic public reply/deduplication | Planned | S08,S16,S17 |
 | S19 | M3 | Authorization/injection/knowledge-change regression | Planned | S18 |
@@ -78,3 +78,7 @@ Implemented the structured contract, mock and local adapters, timeouts and failu
 Artifacts -> actual commands -> results/environment -> unverified limitations -> next step. Failed tests cannot be hidden behind an implemented label. Drafts do not substitute for database/browser acceptance.
 
 Optional D01 MLflow -> D02 PySpark -> D03 Databricks remain planned, after the main track; see brief section 13.
+
+## S16 job execution
+
+Implemented persistent jobs, idempotent API creation, lease fencing and a mock worker. Verified 279 PostgreSQL tests and a separate process reclaiming a simulated expired lease. See [jobs](jobs.md) and [evidence](evidence/2026-11-07-analysis-jobs.md). Citation checks and human review remain S17 and S18.
