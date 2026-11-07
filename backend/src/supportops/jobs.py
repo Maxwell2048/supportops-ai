@@ -1,16 +1,20 @@
 """Analysis job creation and lease-fenced execution."""
 from datetime import timedelta
+import json
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from supportops.dependencies import visible_ticket
 from supportops.errors import ApiError
-from supportops.generation import GenerationError, GenerationFailure
+from supportops.generation import GenerationError, GenerationFailure, Suggestion
 from supportops.idempotency import claim, finish
 from supportops.models import AnalysisJob, User
+from supportops import retrieval
+from supportops.citations import InvalidCitation, lock_current_sources, validate_citations
+from supportops.retrieval_schemas import SearchQuery
 from supportops.ticket_service import _actor, _version
 
 
@@ -103,17 +107,32 @@ def execute_job(engine, job_id, token, provider):
             if ticket.version != job.ticket_version or ticket.archived:
                 raise ApiError(409, "ticket_changed", "Ticket changed")
             ticket_text = ticket.title + "\n" + ticket.body
+            found = retrieval.search(session, actor, SearchQuery(q=ticket.title[:500], mode="keyword"), None)
+            if found.indexed_versions < found.available_versions:
+                raise ApiError(503, "retrieval_incomplete", "Knowledge indexing is incomplete")
+            hits = found.items
         except ApiError:
-            return finish_job(engine, job_id, token, error="access_or_ticket_changed")
+            return finish_job(engine, job_id, token, error="retrieval_or_access_unavailable")
+    if not hits:
+        handoff = Suggestion(category="other", suggested_priority="normal",
+            reply_draft="A support agent will review your request.", citations=[],
+            human_verification=["No relevant published knowledge was found. Review this request manually."])
+        return finish_job(engine, job_id, token, result=handoff.model_dump(mode="json"))
     try:
-        result = provider.generate(ticket_text[:10000], [])
-        return finish_job(engine, job_id, token, result=result.model_dump(mode="json"))
+        evidence = [json.dumps({"chunk_id": str(hit.chunk_id), "version_id": str(hit.version_id), "text": hit.text}) for hit in hits]
+        result = Suggestion.model_validate(provider.generate(ticket_text[:10000], evidence))
+        validate_citations(result, hits)
+        return finish_job(engine, job_id, token, result=result.model_dump(mode="json"), hits=hits)
+    except InvalidCitation:
+        return finish_job(engine, job_id, token, error="invalid_citation")
+    except (ValidationError, TypeError, ValueError):
+        return finish_job(engine, job_id, token, error="invalid_output")
     except GenerationError as error:
         transient = error.kind in {GenerationFailure.TIMEOUT, GenerationFailure.UNAVAILABLE}
         return finish_job(engine, job_id, token, error=error.kind.value, transient=transient)
 
 
-def finish_job(engine, job_id, token, *, result=None, error=None, transient=False):
+def finish_job(engine, job_id, token, *, result=None, error=None, transient=False, hits=()):
     with Session(engine) as session, session.begin():
         now = session.scalar(select(func.clock_timestamp()))
         job = session.scalar(select(AnalysisJob).where(
@@ -129,6 +148,8 @@ def finish_job(engine, job_id, token, *, result=None, error=None, transient=Fals
             ticket = visible_ticket(session, actor, job.ticket_id, lock=True)
             if ticket.version != job.ticket_version or ticket.archived:
                 raise ApiError(409, "ticket_changed", "Ticket changed")
+            if hits and not lock_current_sources(session, actor, hits):
+                raise ApiError(409, "knowledge_changed", "Knowledge changed")
         except ApiError:
             result, error, transient = None, "access_or_ticket_changed", False
         now = session.scalar(select(func.clock_timestamp()))
