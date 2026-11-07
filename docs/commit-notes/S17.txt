@@ -1,0 +1,9 @@
+feat(ai): validate citations and hand off without evidence
+
+I connected the mock analysis worker to current role-authorized keyword retrieval. I require complete indexing of accessible published knowledge before treating an empty search as no evidence. When no matching source exists, I record a fixed human handoff and skip generation.
+
+I pass retrieved chunk and version identifiers with source text to the provider, then reject absent, mismatched or non-contiguous quotations. Before committing a generated result, I lock the relevant articles and recheck current publication, scope and the original version body slice. Provider errors and invalid output remain distinct from a no-evidence handoff. Generated results remain hidden until the review workflow is implemented.
+
+I verified 290 backend tests with zero skips against PostgreSQL, including synthetic valid and invalid citations, management scope isolation, publication changes during generation, incomplete indexing and provider failures. Frontend npm ci and build passed. No database migration was needed.
+
+The worker uses a mock provider. A genuine quotation does not establish claim support. Real generation inference, systematic injection evaluation, human review and public sending remain later work. I used AI assistance for implementation and verification.

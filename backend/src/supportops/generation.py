@@ -39,12 +39,18 @@ class MockGeneration:
     """Deterministic provider for tests and isolated demonstrations."""
 
     def generate(self, ticket: str, evidence: list[str]) -> Suggestion:
+        import json
+
         _validate_input(ticket, evidence)
+        citations = []
+        if evidence:
+            source = json.loads(evidence[0])
+            citations = [Citation(chunk_id=source["chunk_id"], version_id=source["version_id"], quote=source["text"])]
         return Suggestion(
             category="other",
             suggested_priority="normal",
             reply_draft="A support agent will review your request.",
-            citations=[],
+            citations=citations,
             human_verification=["Review the request and available evidence."],
         )
 
