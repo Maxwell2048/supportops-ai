@@ -1,0 +1,7 @@
+docs(jobs): record the S16 implementation plan
+
+I documented the planned creation, authorization, idempotency and durable worker boundaries for analysis jobs. I specified lease token checks and database-time expiry to prevent an old worker from committing after another worker takes over. I also described transactional completion, retry limits, safe error categories and the permission checks needed before using ticket or knowledge data.
+
+I recorded the required concurrency, restart, rollback and authorization acceptance scenarios. I kept the plan explicitly marked as work in progress because the migration, endpoints and worker have not yet been implemented. Citation validation and human review remain later stages.
+
+I ran the repository language check and Git whitespace check. This documentation change does not constitute a job implementation or its acceptance test. The remote workflow result is checked separately after publication. I used AI assistance to prepare this plan.
