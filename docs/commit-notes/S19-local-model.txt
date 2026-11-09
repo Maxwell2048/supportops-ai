@@ -1,0 +1,7 @@
+fix(ai): support local model structured-output grammar
+
+I tested an already installed local generation model using synthetic input. The initial cold call timed out and the next failed because the local runner could not parse the generated structured-output grammar. I removed length and item-count constraints from the model-facing schema while retaining full server-side Pydantic validation of the returned object.
+
+A follow-up local call returned the expected structure and a quote matching the supplied synthetic source. The model classified a sign-in request as billing and suggested high priority, so this example does not establish useful model quality. The application worker remains in mock mode.
+
+I verified 11 focused provider tests, including rejection of an oversized result, and 300 backend tests with zero skips against PostgreSQL. The exact model digest, declared local license, observed failures and remaining validation are recorded in the evidence document.
