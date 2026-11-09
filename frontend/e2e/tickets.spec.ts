@@ -470,3 +470,22 @@ test("server-backed filters reset pagination and detail return preserves the sel
   ).toBeDisabled();
   await expect(page).toHaveURL(/priority=high/);
 });
+
+test("review panel displays sources and prevents evidence-free sending", async ({ page }, testInfo) => {
+  const jobId = "99999999-9999-4999-8999-999999999999";
+  await page.route(`**/api/tickets/${seedId}/analysis-jobs`, async (route) => {
+    await route.fulfill({ json: [{ job_id: jobId, status: "succeeded", attempts: 1, error_code: null, review_decision: null }] });
+  });
+  await page.route(`**/api/analysis-jobs/${jobId}/suggestion`, async (route) => {
+    await route.fulfill({ json: { job_id: jobId, ticket_version: 1, review_decision: null, suggestion: {
+      category: "access", suggested_priority: "normal", reply_draft: "A support agent will review your request.",
+      citations: [], human_verification: ["Confirm account ownership before taking action."]
+    } } });
+  });
+  await login(page, "manager", `/tickets/${seedId}`);
+  const panel = page.getByRole("region", { name: "Suggested response" });
+  await expect(panel.getByText("Human follow-up needed")).toBeVisible();
+  await expect(panel.getByRole("button", { name: "Approve and send" })).toBeDisabled();
+  await expect(panel.getByRole("button", { name: "Reject suggestion" })).toBeEnabled();
+  await panel.screenshot({ path: testInfo.outputPath("analysis-panel.png") });
+});

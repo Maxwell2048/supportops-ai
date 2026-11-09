@@ -7,6 +7,7 @@ import {
 import type { Session } from "../App.tsx";
 import { Empty, ErrorPanel, Loading } from "../components/Feedback.tsx";
 import { TicketActions } from "../components/TicketActions.tsx";
+import { AnalysisPanel } from "../components/AnalysisPanel.tsx";
 import { useTicketWrite } from "../hooks/useTicketWrite.ts";
 import {
   PriorityLabel,
@@ -120,6 +121,7 @@ export function TicketDetailPage({
               </ol>
             )}
           </section>
+          {session.user.role !== "requester" && <AnalysisPanel ticket={ticket} session={session} />}
           <TicketActions ticket={ticket} session={session} write={write} />
           {session.user.role !== "requester" && ticket.events && (
             <section className="panel" aria-labelledby="history-heading">
