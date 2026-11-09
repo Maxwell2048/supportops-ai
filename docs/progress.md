@@ -54,7 +54,7 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 | S16 | M3 | Durable jobs/leases/idempotency/restart recovery | Locally verified with mock worker; real crash and model inference pending | S15 |
 | S17 | M3 | Contiguous citation checks/evidence-free refusal | Locally verified with mock provider | S15 |
 | S18 | M3 | Human review/atomic public reply/deduplication | Backend and review interface verified with mock provider | S08,S16,S17 |
-| S19 | M3 | Authorization/injection/knowledge-change regression | Planned | S18 |
+| S19 | M3 | Authorization/injection/knowledge-change regression | Initial synthetic regressions verified; real-model adversarial evaluation remains | S18 |
 | S20 | M4 | Fixed data/environment/EXPLAIN/index experiments | Planned | S07 |
 | S21 | M4 | 20/10 split/manual labels/baselines/metrics/limits | Planned | S14,S17,S19 |
 | S22 | M4 | Complete Compose/startup/backup/restore | Planned | S12,S18 |
@@ -94,3 +94,7 @@ Implemented and verified atomic human decisions, retry protection, current ticke
 ## S18 review workspace
 
 Added staff analysis history, source inspection and human decisions to ticket details. Verified component and desktop/narrow browser coverage with synthetic mocked analysis responses. See [UI evidence](evidence/2026-11-09-review-ui.md). The worker remains mock-only.
+
+## S19 initial security regression
+
+Verified role/object boundaries, changed tickets, untrusted source instructions and HTML-like source rendering with synthetic cases. Real-model injection evaluation remains unverified. See [evidence](evidence/2026-11-09-analysis-security.md).

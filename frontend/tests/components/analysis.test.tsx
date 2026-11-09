@@ -46,3 +46,13 @@ it("preserves the review request and key after uncertain network failure", async
   expect(send.mock.calls[0][2]).toEqual(send.mock.calls[1][2]);
   expect(send.mock.calls[0][3]).toBe(send.mock.calls[1][3]);
 });
+
+it("renders untrusted source text as text instead of executable markup", async () => {
+  vi.spyOn(api, "analysisJobs").mockResolvedValue([job]);
+  const value = makeSuggestion(true);
+  value.suggestion.citations[0].quote = "<img src=x onerror=alert(1)>";
+  vi.spyOn(api, "suggestion").mockResolvedValue(value);
+  mount();
+  expect(await screen.findByText("<img src=x onerror=alert(1)>")).toBeInTheDocument();
+  expect(document.querySelector("img")).toBeNull();
+});
