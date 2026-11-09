@@ -178,7 +178,7 @@ test("three roles complete the lifecycle with public/internal isolation and resp
     "Reopen ticket",
     "Reopen closed synthetic work.",
   );
-  await current(agent);
+  await agent.getByRole("button", { name: "Refresh ticket", exact: true }).click();
   await expect(
     agent.getByRole("heading", { name: "Ticket unavailable", exact: true }),
   ).toBeVisible();

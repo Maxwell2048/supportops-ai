@@ -1,0 +1,5 @@
+test(e2e): wait for revoked access after ticket reassignment
+
+I investigated the failed desktop browser case in remote run 42578171723. After a manager reopened a ticket, the server removed its assignee. The test refreshed the former agent's view, then waited for the action form before asserting that the ticket was unavailable. The form is absent once the permission recheck completes, making that wait depend on a stale render.
+
+I updated the scenario to refresh and directly assert the unavailable page for the former agent. The assertion still verifies access revocation and does not increase timeouts or add retries. The complete local Chromium suite passed all 14 desktop and narrow cases after the change. The follow-up remote result is checked against the new commit.
