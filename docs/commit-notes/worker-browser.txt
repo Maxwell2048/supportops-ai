@@ -1,0 +1,7 @@
+test(e2e): exercise the independent analysis worker and human review
+
+I extended the isolated browser fixture to run a separate mock worker against its own disposable PostgreSQL schema. I added browser scenarios that create a request, wait for a no-evidence handoff and reject it, and publish and index a synthetic source before reviewing and sending an edited reply. The requester then sees exactly one public message.
+
+The complete desktop and narrow Chromium suite passed 18 cases. I kept production login limits unchanged and raised only the isolated fixture limits because the expanded suite repeatedly signs in from one synthetic loopback client. I corrected an initial test race by waiting for the review response before checking the requester view. The worker and owned schema are cleaned up after execution.
+
+The workflow uses a deterministic mock provider. Real model quality and deployment remain independent acceptance work.
