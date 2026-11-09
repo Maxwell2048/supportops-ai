@@ -82,3 +82,21 @@ jobs:
         working-directory: frontend
       - run: npm run test:e2e
         working-directory: frontend
+  stack:
+    runs-on: ubuntu-latest
+    env:
+      POSTGRES_USER: supportops
+      POSTGRES_DB: supportops_compose_test
+      POSTGRES_PASSWORD: synthetic-compose-only-password
+      JWT_SECRET: synthetic-compose-only-signing-secret-at-least-thirty-two-bytes
+      DEMO_PASSWORD: synthetic-compose-only-password
+      SUPPORTOPS_WEB_PORT: '18088'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start isolated stack
+        run: docker compose -p supportopsci -f compose.full.yaml up --build -d --wait
+      - name: Verify synthetic workflow and restore
+        run: python3 scripts/check_compose_stack.py --project supportopsci --port 18088
+      - name: Remove isolated stack
+        if: always()
+        run: docker compose -p supportopsci -f compose.full.yaml down --volumes --remove-orphans

@@ -1,0 +1,7 @@
+feat(ops): add an isolated local stack and verified database recovery
+
+I added a separate Compose project for PostgreSQL, migration, API, mock worker and a static frontend. The application waits for database health and migration completion. The web port binds to loopback, credentials stay in environment configuration and image build contexts exclude local environment files. I added an explicit synthetic seed and activation command that preserves existing account states.
+
+I added a backup command that refuses to overwrite an existing file and a restore command that only creates a newly named restore database. I exercised a synthetic requester and manager workflow through the running stack, backed up the database, restored it into a separate database and compared counts and row fingerprints across 15 tables. I added a separate GitHub Actions stack job to build, smoke-test and restore in an isolated project.
+
+I verified two local isolated stacks, 306 backend tests with zero skips and a clean frontend install and build. Python, Node, nginx and uv base images use version tags; production image pinning, secret management, real-model container networking, scheduled backup, recovery cutover and cloud deployment remain open.

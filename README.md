@@ -83,7 +83,7 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 docker compose up -d db
 ```
 
-On 2026-10-21, Docker recovery, empty-database migration, repeatable seeding, real integration tests, and stop/start persistence were verified; see [PostgreSQL evidence](docs/evidence/2026-10-21-postgresql-verification.md). See [database operations](docs/database.md) for migrations and testing. S14 passed 262 backend tests, 46 client/component tests, and 12 E2E cases, plus a separate real Ollama and pgvector run. See [S14 evidence](docs/evidence/2026-10-27-retrieval.md). Full application Compose belongs to S22.
+On 2026-10-21, Docker recovery, empty-database migration, repeatable seeding, real integration tests, and stop/start persistence were verified; see [PostgreSQL evidence](docs/evidence/2026-10-21-postgresql-verification.md). See [database operations](docs/database.md) for migrations and testing. S14 passed 262 backend tests, 46 client/component tests, and 12 E2E cases, plus a separate real Ollama and pgvector run. See [S14 evidence](docs/evidence/2026-10-27-retrieval.md). A separate [local application stack and recovery guide](docs/compose.md) covers the verified mock-worker Compose setup.
 
 If starting Docker from the desktop agent encounters the socket access issue again:
 
@@ -124,6 +124,7 @@ Tasks, dependencies, acceptance, and next steps live in [progress](docs/progress
 - [Business forms and safe write recovery](docs/forms.md)
 - [Component tests and isolated browser regression](docs/testing.md)
 - [Knowledge versions, publication and history permissions](docs/knowledge.md)
+- [Local application stack and recovery](docs/compose.md)
 - [Delivery handbook and remaining acceptance](docs/handbook.md)
 - [GitHub setup and commit policy](docs/git-workflow.md)
 - [Foundation decision](docs/adr/0001-foundation-and-scope.md)
