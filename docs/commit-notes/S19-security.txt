@@ -1,0 +1,5 @@
+test(security): cover untrusted analysis and review authorization
+
+I added regression cases for requester and unassigned-agent access to analysis results and review, changes to a ticket while analysis is running, and instructions embedded in retrieved knowledge. I verified that a simulated adversarial provider cannot directly close the ticket or send a reply as a consequence of generation. I also verified that source markup is rendered as text in the review interface.
+
+I ran 299 backend tests with zero skips against PostgreSQL and 15 frontend component tests. These checks use synthetic data and a simulated provider. They do not measure real model resistance to prompt injection or establish that a valid quotation supports a proposed response. Broader adversarial evaluation and production controls remain outstanding.
