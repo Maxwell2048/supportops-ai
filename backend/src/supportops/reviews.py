@@ -69,6 +69,7 @@ def get_suggestion(session, actor, job_id):
         raise ApiError(409, "stale_suggestion", "The ticket changed; analyze again")
     suggestion = validated_suggestion(session, actor, job)
     return {"job_id": str(job.id), "ticket_version": job.ticket_version, "review_decision": job.review_decision,
+            "generation": {"provider": job.generation_provider, "model": job.generation_model, "digest": job.generation_digest},
             "suggestion": suggestion.model_dump(mode="json")}
 
 

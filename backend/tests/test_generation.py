@@ -76,3 +76,36 @@ def test_provider_schema_removes_repetition_limits_but_output_validation_remains
     with pytest.raises(GenerationError) as error:
         provider.generate("A ticket", [])
     assert error.value.kind == GenerationFailure.INVALID_OUTPUT
+
+
+def test_pinned_model_is_checked_before_and_after_generation():
+    digest = "a" * 64
+    seen = []
+    def handler(request):
+        seen.append(request.url.path)
+        if request.url.path == "/api/tags":
+            return httpx.Response(200, json={"models": [{"name": "test-model", "digest": digest}]})
+        return response(valid())
+    provider = OllamaGeneration("test-model", digest=digest, transport=httpx.MockTransport(handler))
+    assert provider.generate("A ticket", []).category == "other"
+    assert seen == ["/api/tags", "/api/chat", "/api/tags"]
+
+
+def test_changed_model_after_generation_is_rejected():
+    digest = "a" * 64
+    calls = 0
+    def handler(request):
+        nonlocal calls
+        if request.url.path == "/api/tags":
+            calls += 1
+            return httpx.Response(200, json={"models": [{"name": "test-model", "digest": digest if calls == 1 else "b" * 64}]})
+        return response(valid())
+    provider = OllamaGeneration("test-model", digest=digest, transport=httpx.MockTransport(handler))
+    with pytest.raises(GenerationError) as error:
+        provider.generate("A ticket", [])
+    assert error.value.kind == GenerationFailure.UNAVAILABLE
+
+
+def test_invalid_pinned_digest_is_rejected():
+    with pytest.raises(ValueError):
+        OllamaGeneration("test-model", digest="short")

@@ -67,15 +67,19 @@ def _validate_input(ticket: str, evidence: list[str]) -> None:
 class OllamaGeneration:
     """Local model adapter. Generated content requires further validation and review."""
 
-    def __init__(self, model: str, url: str = "http://127.0.0.1:11434", *, transport=None):
+    def __init__(self, model: str, url: str = "http://127.0.0.1:11434", *, transport=None, digest=None):
+        import re
         from supportops.config import Settings
 
         Settings(embedding_url=url)
         if not model or len(model) > 128:
             raise ValueError("A bounded local model name is required")
+        if digest is not None and not re.fullmatch(r"[0-9a-f]{64}", digest):
+            raise ValueError("A full model digest is required")
         self.model = model
         self.url = url.rstrip("/")
         self.transport = transport
+        self.digest = digest
 
     def generate(self, ticket: str, evidence: list[str]) -> Suggestion:
         import json
@@ -106,12 +110,23 @@ class OllamaGeneration:
         try:
             with httpx.Client(base_url=self.url, timeout=httpx.Timeout(60, connect=5),
                               trust_env=False, follow_redirects=False, transport=self.transport) as client:
+                def verify_model():
+                    if self.digest is None:
+                        return
+                    tags = client.get("/api/tags")
+                    tags.raise_for_status()
+                    if not any(row.get("name") == self.model and row.get("digest") == self.digest for row in tags.json()["models"]):
+                        raise GenerationError(GenerationFailure.UNAVAILABLE)
+
+                verify_model()
                 response = client.post("/api/chat", json=payload)
                 response.raise_for_status()
                 result = response.json()
                 if result.get("done") is not True or result.get("done_reason") == "length":
                     raise GenerationError(GenerationFailure.INVALID_OUTPUT)
-                return Suggestion.model_validate_json(result["message"]["content"])
+                suggestion = Suggestion.model_validate_json(result["message"]["content"])
+                verify_model()
+                return suggestion
         except httpx.TimeoutException:
             raise GenerationError(GenerationFailure.TIMEOUT) from None
         except httpx.HTTPError:

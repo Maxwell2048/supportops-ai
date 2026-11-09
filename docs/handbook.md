@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-11-09 (Australia/Perth).
 
-This handbook records the delivered local workflow, evidence, and remaining work. The project is a synthetic portfolio application. Current generation uses a deterministic mock. A draft requires a staff decision before a public reply can be created.
+This handbook records the delivered local workflow, evidence, and remaining work. The project is a synthetic portfolio application. Generation defaults to a deterministic mock and supports an explicitly pinned local Ollama model. A draft requires a staff decision before a public reply can be created.
 
 ## Delivered workflow
 
@@ -18,7 +18,7 @@ This handbook records the delivered local workflow, evidence, and remaining work
 - PostgreSQL ticket, knowledge, retrieval, job and review tests use isolated synthetic schemas. See [review backend evidence](evidence/2026-11-09-review.md) and [security evidence](evidence/2026-11-09-analysis-security.md).
 - The review interface has component coverage and desktop/narrow Chromium coverage. Its dedicated browser scenario uses mocked synthetic analysis responses. Existing ticket and knowledge browser scenarios use an isolated API and PostgreSQL fixture. See [UI evidence](evidence/2026-11-09-review-ui.md).
 - S14 separately exercised real 384-dimensional local embeddings and pgvector with synthetic inputs. This does not verify a real generation model. See [retrieval evidence](evidence/2026-10-27-retrieval.md).
-- A separate local generation adapter smoke check returned structured output and a matching synthetic quotation, but misclassified the sign-in example. The worker still uses a mock. See [local generation evidence](evidence/2026-11-09-local-generation.md).
+- A separate local generation adapter smoke check returned structured output and a matching synthetic quotation, but misclassified the sign-in example. The default worker uses a mock. An optional pinned-model worker was exercised separately; see [worker evidence](evidence/2026-11-09-pinned-worker.md).
 - Each GitHub Actions result belongs to a particular commit. The failed remote browser run and its correction are recorded in [CI follow-up](evidence/2026-11-09-ci-followup.md). Check the current commit's Actions page before asserting its result.
 
 ## Work remaining
@@ -26,7 +26,7 @@ This handbook records the delivered local workflow, evidence, and remaining work
 | Area | Required work and acceptance evidence |
 |---|---|
 | S19 security | Expand concurrent reassignment, publication change, prompt injection and malformed citation regressions. Evaluate actual model behavior with a fixed synthetic adversarial set. Verify that API authorization and human review remain effective independently of model output. |
-| Real generation | Select an explicitly licensed local generation model and record its exact digest, context settings and license. Connect it to the worker under explicit configuration. Run synthetic end-to-end inference, measure failures and document resource requirements. The current worker uses a mock. |
+| Real generation | Select an explicitly licensed local generation model and record its exact digest, context settings and license. A pinned local worker and synthetic end-to-end check exist. Select and evaluate a suitable model, verify license provenance, measure failures and document resource requirements before use. The default remains mock. |
 | S20 SQL experiments | An initial 5,000-row temporary-table observation is documented in [SQL evidence](evidence/2026-11-09-sql-experiment.md). Extend it to full ticket rows and application queries, vary the workload, measure write cost and repeat observations before proposing an index change. |
 | S21 AI evaluation | Create and manually review the planned development and holdout questions. Version the data, retrieval and prompt settings. Measure retrieval, citation authenticity, claim support, refusal and latency without tuning repeatedly on the holdout set. |
 | S22 operations | Complete application and worker Compose configuration, startup checks, backup and restore. Exercise a restore into an isolated database and verify representative records. Keep the development password and existing data intact. |
