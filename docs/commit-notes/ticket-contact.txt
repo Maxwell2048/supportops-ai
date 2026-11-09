@@ -1,0 +1,7 @@
+feat(tickets): capture requester contact details
+
+I added an optional contact phone to ticket creation, persisted it with a database constraint and displayed it to the requester and currently authorized support staff. I expose the requester's existing account email to authorized staff instead of accepting a client-supplied email. Existing tickets and older clients can omit the new field.
+
+I verified 315 backend tests with zero skips and 24 desktop and narrow browser cases, including synthetic contact creation and manager visibility. Integration checks cover invalid phone values, cross-user denial, idempotent retry, forged email rejection and audit redaction. I upgraded local development from 0008 to 0009 and compared prior row fingerprints in 14 tables.
+
+The phone is optional as a compatibility decision and is not verified for ownership. Email notifications and outbound contact are not implemented.

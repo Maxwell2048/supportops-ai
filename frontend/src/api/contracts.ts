@@ -23,6 +23,7 @@ export interface TicketSummary {
   assignee_id: string | null;
   title: string;
   body: string;
+  contact_phone?: string | null;
   status: TicketStatus;
   priority: Priority;
   version: number;
@@ -47,6 +48,7 @@ export interface TicketEvent {
 export interface TicketDetail extends TicketSummary {
   messages: TicketMessage[];
   events?: TicketEvent[];
+  requester_email?: string;
 }
 export interface TicketPage {
   items: TicketSummary[];
@@ -160,6 +162,7 @@ export function parseTicket(value: unknown): TicketSummary {
     assignee_id: row.assignee_id === null ? null : uuid(row.assignee_id),
     title: text(row.title),
     body: text(row.body),
+    contact_phone: row.contact_phone == null ? null : text(row.contact_phone),
     version: integer(row.version),
     archived: row.archived,
     status: choice(row.status, [
@@ -212,7 +215,8 @@ export function parseDetail(value: unknown, role: Role): TicketDetail {
             created_at: timestamp(event.created_at),
           };
         });
-  return { ...parseTicket(value), messages, events };
+  return { ...parseTicket(value), messages, events,
+    requester_email: row.requester_email === undefined ? undefined : text(row.requester_email) };
 }
 
 export function parseAnalysisJobs(value: unknown) {

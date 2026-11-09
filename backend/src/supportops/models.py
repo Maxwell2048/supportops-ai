@@ -36,6 +36,7 @@ class Ticket(Base):
         CheckConstraint("version > 0", name="ck_tickets_version"),
         CheckConstraint("length(trim(title)) > 0", name="ck_tickets_title"),
         CheckConstraint("length(trim(body)) BETWEEN 1 AND 10000", name="ck_tickets_body"),
+        CheckConstraint("contact_phone IS NULL OR (contact_phone = trim(contact_phone) AND contact_phone ~ '^[0-9+(). -]{3,40}$' AND contact_phone ~ '[0-9]')", name="ck_tickets_contact_phone"),
         CheckConstraint("NOT archived OR status = 'closed'", name="ck_tickets_archive"),
         CheckConstraint("status NOT IN ('in_progress','waiting_customer') OR assignee_id IS NOT NULL", name="ck_tickets_assignee"),
         Index("ix_tickets_requester_created", "requester_id", "created_at", "id"),
@@ -47,6 +48,7 @@ class Ticket(Base):
     assignee_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
     title: Mapped[str] = mapped_column(String(200))
     body: Mapped[str] = mapped_column(Text)
+    contact_phone: Mapped[str | None] = mapped_column(String(40))
     status: Mapped[str] = mapped_column(String(24), server_default="open")
     priority: Mapped[str] = mapped_column(String(12), server_default="normal")
     version: Mapped[int] = mapped_column(Integer, server_default="1")

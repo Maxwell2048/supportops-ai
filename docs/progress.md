@@ -126,3 +126,7 @@ Measured keyword and real local vector retrieval over a 30-case synthetic draft 
 ## Full-row SQL observation
 
 Repeated the ticket query and 1,000-row insert measurements with the real migrated table in an isolated synthetic schema. See [evidence](evidence/2026-11-09-sql-full.md). Broader production-like workload measurement remains open.
+
+## Ticket contact details
+
+Added optional phone capture and authorized staff visibility of requester account email. Verified existing data preservation, role/object restrictions and browser flows. See [evidence](evidence/2026-11-09-ticket-contact.md). Azure deployment is deferred for the local delivery at the owner request.

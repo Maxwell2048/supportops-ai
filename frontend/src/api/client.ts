@@ -188,7 +188,7 @@ export function createApi(fetcher: typeof fetch = fetch, timeoutMs = 15000) {
       request("/agents", parseAgents, { token, signal }),
     createTicket: (
       token: string,
-      body: { title: string; body: string },
+      body: { title: string; body: string; contact_phone?: string },
       key: string,
       signal?: AbortSignal,
     ) => request("/tickets", parseTicket, { token, body, key, signal }),

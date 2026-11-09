@@ -75,6 +75,7 @@ class TicketSummary(DTO):
     assignee_id: UUID | None
     title: str
     body: str
+    contact_phone: str | None = None
     status: str
     priority: str
     version: int
@@ -89,6 +90,7 @@ class TicketResponse(TicketSummary):
 
 class StaffTicketResponse(TicketResponse):
     events: list[EventResponse]
+    requester_email: str
 
 
 TicketStatus = Literal["open", "in_progress", "waiting_customer", "resolved", "closed"]
@@ -100,6 +102,14 @@ ReasonText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=
 class TicketCreate(DTO):
     title: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200), AfterValidator(postgres_text)]
     body: BodyText
+    contact_phone: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=40, pattern=r"^[0-9+(). -]+$")] | None = None
+
+    @field_validator("contact_phone")
+    @classmethod
+    def phone_has_digit(cls, value):
+        if value is not None and not any(char in "0123456789" for char in value):
+            raise ValueError("Phone number must contain a digit")
+        return value
 
 
 class TicketPatch(DTO):

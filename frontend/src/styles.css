@@ -1030,4 +1030,5 @@ dd {
 .knowledge-detail .write-panel { margin: 0; }
 .knowledge-detail .write-panel input { width: 100%; max-width: 100%; padding: 12px; border: 1px solid #c8d4cb; border-radius: 6px; background: white; }
 .knowledge-detail .analysis-actions { margin-top: 20px; }
+.properties dd { overflow-wrap: anywhere; }
 @media (max-width: 800px) { .knowledge-layout { grid-template-columns: 1fr; } }

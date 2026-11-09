@@ -95,7 +95,8 @@ def ticket_detail(ticket_id: UUID, user: CurrentUser, session: DbSession):
     if user.role == "requester":
         return TicketResponse(**fields, messages=messages)
     events = _events(session, ticket_id)
-    return StaffTicketResponse(**fields, messages=messages, events=events)
+    requester = session.get(User, ticket.requester_id)
+    return StaffTicketResponse(**fields, messages=messages, events=events, requester_email=requester.email)
 
 
 def _events(session, ticket_id):

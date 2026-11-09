@@ -21,7 +21,7 @@ Implemented: login/me, ticket create/list/detail/PATCH/messages/events, manager 
 | GET /api/me | None | 200 current active identity id,email,role |
 | GET /api/agents | None | 200 active agents id,email,role ordered by email/id; manager only; no pagination in the small synthetic workspace |
 | GET /api/tickets | status,priority,assignee_id,q,cursor,limit | 200 authorized list; filters cannot broaden visibility |
-| POST /api/tickets | title(1-200),body(1-10000) | 201 TicketSummary; requester only |
+| POST /api/tickets | title(1-200),body(1-10000),contact_phone? | 201 TicketSummary; requester only |
 | GET /api/tickets/{id} | None | 200 ticket + authorized messages; requester excludes internal fields |
 | GET /api/tickets/{id}/events | None | 200 events; authorized agent/manager only |
 | PATCH /api/tickets/{id} | expected_version,status?,assignee_id?,priority?,archived?,reason?,public_reply? | 200 TicketSummary; field/state permission and actual change required |
@@ -46,8 +46,10 @@ Implemented: login/me, ticket create/list/detail/PATCH/messages/events, manager 
 | GET /health | None | 200 process liveness; public |
 | GET /ready | None | 200 ready / 503 missing config, unreachable DB, or schema mismatch |
 
-Current readiness requires 0008_job_provider and JWT_SECRET. Login passwords accept 1-128 characters; emails are trimmed/lowercased. Default token lifetime: 900 seconds. Reject unknown fields and null characters. See [auth](auth.md), [ticket behavior](tickets.md) and [knowledge](knowledge.md).
+Current readiness requires 0009_contact_phone and JWT_SECRET. Login passwords accept 1-128 characters; emails are trimmed/lowercased. Default token lifetime: 900 seconds. Reject unknown fields and null characters. See [auth](auth.md), [ticket behavior](tickets.md) and [knowledge](knowledge.md).
 
 Priorities: low/normal/high/urgent. Planned suggestion categories: access/billing/bug/how_to/other; suggestions do not automatically modify tickets. Planned decisions: accepted/edited/rejected; edited requires nonempty edited_body, other decisions forbid it. The server chooses requester_id, author_id, reviewer_id, created_at, and role.
 
 PATCH and public_reply commit atomically; waiting_customer/resolved requires public_reply. Reopening reason becomes a public message. Use messages for ordinary conversation. expected_version is a strict positive integer. Explicit null assignee_id clears assignment; status/priority/archived reject null. Ticket search covers original title/body only. Signed list cursors bind identity/role/filters/limit and cannot authenticate a session.
+
+Ticket contact phones are optional and restricted to the current ticket scope. Staff ticket details include the requester account email. The server reads that email from the requester account rather than accepting it from the ticket payload.
