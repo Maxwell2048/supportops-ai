@@ -117,12 +117,12 @@ def execute_job(engine, job_id, token, provider):
         handoff = Suggestion(category="other", suggested_priority="normal",
             reply_draft="A support agent will review your request.", citations=[],
             human_verification=["No relevant published knowledge was found. Review this request manually."])
-        return finish_job(engine, job_id, token, result=handoff.model_dump(mode="json"))
+        return finish_job(engine, job_id, token, result=handoff.model_dump(mode="json"), validated=True)
     try:
         evidence = [json.dumps({"chunk_id": str(hit.chunk_id), "version_id": str(hit.version_id), "text": hit.text}) for hit in hits]
         result = Suggestion.model_validate(provider.generate(ticket_text[:10000], evidence))
         validate_citations(result, hits)
-        return finish_job(engine, job_id, token, result=result.model_dump(mode="json"), hits=hits)
+        return finish_job(engine, job_id, token, result=result.model_dump(mode="json"), hits=hits, validated=True)
     except InvalidCitation:
         return finish_job(engine, job_id, token, error="invalid_citation")
     except (ValidationError, TypeError, ValueError):
@@ -132,7 +132,7 @@ def execute_job(engine, job_id, token, provider):
         return finish_job(engine, job_id, token, error=error.kind.value, transient=transient)
 
 
-def finish_job(engine, job_id, token, *, result=None, error=None, transient=False, hits=()):
+def finish_job(engine, job_id, token, *, result=None, error=None, transient=False, hits=(), validated=False):
     with Session(engine) as session, session.begin():
         now = session.scalar(select(func.clock_timestamp()))
         job = session.scalar(select(AnalysisJob).where(
@@ -162,6 +162,7 @@ def finish_job(engine, job_id, token, *, result=None, error=None, transient=Fals
             job.status = "failed" if error else "succeeded"
         job.error_code = error
         job.result = result if not error else None
+        job.validation_version = "s17-v1" if result and not error and validated else None
         job.lease_token = job.lease_expires_at = None
         job.updated_at = now
         return True

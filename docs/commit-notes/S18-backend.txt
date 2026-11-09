@@ -1,0 +1,7 @@
+feat(review): add transactional human review for suggestions
+
+I added a persistent review decision and a validation marker so older results are reanalyzed before review. I expose validated suggestions only to staff with current ticket access and recheck cited source publication and scope. Ticket or knowledge changes prevent review of a stale draft.
+
+I added accept, edit and reject decisions. Accepting or editing writes a single public message, ticket version, event, audit and review decision in one transaction. Rejection records the human decision without sending a reply. Evidence-free handoffs cannot be published through the suggestion workflow. Idempotency protects retries and terminal decisions cannot be repeated with a different request.
+
+I verified the 295-test backend regression and six focused PostgreSQL review cases, including real HTTP authorization, retry, rollback, changed knowledge and reassignment. I upgraded the local schema from 0006 to 0007 and checked row counts in 14 existing tables. Frontend installation and build passed after a transient Windows file lock. Real model inference and the user interface remain separate follow-up work.
