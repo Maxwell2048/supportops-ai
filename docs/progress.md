@@ -55,7 +55,7 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 | S17 | M3 | Contiguous citation checks/evidence-free refusal | Locally verified with mock provider | S15 |
 | S18 | M3 | Human review/atomic public reply/deduplication | Backend and review interface verified with mock provider | S08,S16,S17 |
 | S19 | M3 | Authorization/injection/knowledge-change regression | Initial synthetic regressions verified; real-model adversarial evaluation remains | S18 |
-| S20 | M4 | Fixed data/environment/EXPLAIN/index experiments | Initial synthetic experiment verified; broader workloads pending | S07 |
+| S20 | M4 | Fixed data/environment/EXPLAIN/index experiments | Full-row synthetic query and insert observations verified; broader workloads pending | S07 |
 | S21 | M4 | 20/10 split/manual labels/baselines/metrics/limits | Synthetic draft baseline measured; independent review and broader evaluation pending | S14,S17,S19 |
 | S22 | M4 | Complete Compose/startup/backup/restore | Local synthetic stack and isolated restore verified; production operations pending | S12,S18 |
 | S23 | M4 | Database/migration/frontend/mock CI and branch protection | Planned | S12,S19,S22 |
@@ -122,3 +122,7 @@ Built and ran a separate local Compose project with API, frontend and mock worke
 ## Provisional retrieval evaluation
 
 Measured keyword and real local vector retrieval over a 30-case synthetic draft split. Labels lack independent human review and the four-article corpus makes vector Hit@5 non-discriminating. See [evaluation evidence](evidence/2026-11-09-retrieval-evaluation.md).
+
+## Full-row SQL observation
+
+Repeated the ticket query and 1,000-row insert measurements with the real migrated table in an isolated synthetic schema. See [evidence](evidence/2026-11-09-sql-full.md). Broader production-like workload measurement remains open.

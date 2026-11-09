@@ -1,0 +1,5 @@
+perf(sql): compare full ticket query and insert costs in isolation
+
+I extended the SQL observation to use the migrated ticket table, full-row projection and the application assignee/status pagination shape. The script inserts 5,000 deterministic synthetic tickets into a disposable schema and verifies the owned schema name before temporarily removing and recreating the existing composite index. It compares identical 21-record pages across five EXPLAIN ANALYZE runs per configuration.
+
+I also measured five 1,000-row inserts with and without the index, rolling each insert back to a savepoint. In this local run the query medians were 0.207 ms and 0.018 ms, while the insert medians were 9.899 ms and 11.386 ms. I recorded the plans, timing boundaries and limits. These warm, sequential synthetic observations do not establish production performance and no application index or development data was changed.
