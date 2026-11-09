@@ -98,3 +98,7 @@ Added staff analysis history, source inspection and human decisions to ticket de
 ## S19 initial security regression
 
 Verified role/object boundaries, changed tickets, untrusted source instructions and HTML-like source rendering with synthetic cases. Real-model injection evaluation remains unverified. See [evidence](evidence/2026-11-09-analysis-security.md).
+
+## Local generation compatibility
+
+A synthetic local model call returned structured output and an authentic quote after a grammar compatibility fix. The model misclassified the sign-in example. The worker remains mock-only. See [local generation evidence](evidence/2026-11-09-local-generation.md).

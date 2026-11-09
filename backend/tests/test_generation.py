@@ -63,3 +63,16 @@ def test_rejects_remote_endpoint_and_unbounded_input():
         OllamaGeneration("model", "http://example.com")
     with pytest.raises(ValueError):
         MockGeneration().generate(" ", [])
+
+
+def test_provider_schema_removes_repetition_limits_but_output_validation_remains_strict():
+    def handler(request):
+        body = json.loads(request.content)
+        assert "maxLength" not in json.dumps(body["format"])
+        oversized = json.loads(valid())
+        oversized["reply_draft"] = "x" * 10001
+        return response(json.dumps(oversized))
+    provider = OllamaGeneration("test-model", transport=httpx.MockTransport(handler))
+    with pytest.raises(GenerationError) as error:
+        provider.generate("A ticket", [])
+    assert error.value.kind == GenerationFailure.INVALID_OUTPUT
