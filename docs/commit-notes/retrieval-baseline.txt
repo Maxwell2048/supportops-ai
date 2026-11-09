@@ -1,0 +1,7 @@
+test(eval): add a provisional synthetic retrieval baseline
+
+I added 30 synthetic draft retrieval cases with 20 development and 10 holdout-labeled examples separated by source group. I added a disposable-schema runner for PostgreSQL keyword and pinned local vector retrieval, recording the dataset hash, model digest, per-case hits and timing. The labels require independent human review and the author had access to the source corpus.
+
+I ran keyword and vector observations on PostgreSQL 17.11. Keyword returned the expected source for 19 of 20 development cases and all 10 holdout-labeled cases. Vector returned the expected source in the first five for all cases, but the corpus contains only four articles, so that measure cannot distinguish ranking quality. Initial parallel vector runs timed out during cold loading; sequential warm runs succeeded. I repeated the vector holdout-labeled run once to capture truncated output and recorded that exposure.
+
+I verified the dataset split and references and ran 308 backend tests with zero skips, plus a clean frontend install and build. The draft labels, small corpus and repeated holdout exposure prevent interpreting the results as production accuracy or independent evaluation. Human review, larger datasets, claim support, refusal and adversarial evaluation remain open.
