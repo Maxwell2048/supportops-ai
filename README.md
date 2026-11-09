@@ -100,7 +100,7 @@ The helper checks the engine first and starts Docker Desktop through Windows Exp
 | M0 | Permissions, states, ER model, API, data modes | Drafted; consistency review pending |
 | M1 | Database, authentication, three-role ticket API, audit | S05-S08 locally verified |
 | M2 | React business pages, caching, component tests, E2E | S09-S12 locally verified; Chromium workflow passed on the CI fix |
-| M3 | Knowledge versions, retrieval, AI jobs, citations, human review | S13-S14 locally verified; S15-S17 mock and simulated execution verified; S18-S19 planned |
+| M3 | Knowledge versions, retrieval, AI jobs, citations, human review | S13-S18 locally verified with mock worker; S19 and S20 initial observations recorded |
 | M4 | SQL/AI evaluation, Compose, recovery, complete CI | Planned |
 | M5 | Azure, IaC, observability, release rollback, portfolio evidence | Planned |
 

@@ -1,0 +1,5 @@
+docs(status): align project status with verified review delivery
+
+I updated the milestone overview and citation guide to reflect the delivered staff review interface and its separate suggestion endpoint. I recorded the exact successful browser-fix and security-regression workflow runs alongside the original failed run.
+
+I checked repository language and whitespace before publication. Remaining real-model evaluation, full SQL workload experiments, application recovery and cloud work remain documented in the delivery handbook.
