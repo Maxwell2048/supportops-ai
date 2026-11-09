@@ -1,0 +1,7 @@
+docs(delivery): add the project handoff handbook
+
+I documented the current local startup and review workflow, the role of the separate mock worker, citation and human-review boundaries, and safe retry behavior. I linked existing evidence and recorded the distinction between mocked browser scenarios, real PostgreSQL execution and the standalone local model smoke check.
+
+I listed the remaining security evaluation, knowledge interface, SQL and AI experiments, backup and recovery, CI protection, Azure approvals and deployment acceptance. I included practical troubleshooting and stage publication checks so future work can proceed in order and retain execution evidence.
+
+I ran the repository language and whitespace checks. The handbook records outstanding work and does not claim that cloud deployment, production readiness, real-worker end-to-end inference or evaluation has been completed.
