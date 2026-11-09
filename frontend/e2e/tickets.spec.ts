@@ -50,6 +50,8 @@ async function create(page: Page) {
     .getByLabel("What do you need help with?")
     .fill("Synthetic end-to-end request. No private information.");
   await page.getByLabel("What do you need help with?").press("Tab");
+  await expect(page.getByLabel("Contact phone (optional)")).toBeFocused();
+  await page.getByLabel("Contact phone (optional)").press("Tab");
   await expect(
     page.getByRole("button", { name: "Submit request", exact: true }),
   ).toBeFocused();

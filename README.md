@@ -17,7 +17,7 @@ The original requirements are preserved in an English translation of the [projec
 - Four foundational business tables plus idempotency and audit tables, Alembic migrations, synthetic seed data, and real database integration tests.
 - Email/password login, short-lived JWTs, current identity, and server-authorized ticket details/events. Requester responses exclude internal messages and events.
 - Five explicitly activated synthetic demo accounts; credentials exist only in the ignored local `.env`. No public registration or role-editing API.
-- Ticket creation, authorized lists/filters/pagination, assignment, replies, status/archive changes, version conflicts, transactional events, persistent idempotency, manager audit queries, and redacted JSON request logs.
+- Ticket creation with optional contact phone and account email, authorized lists/filters/pagination, assignment, replies, status/archive changes, version conflicts, transactional events, persistent idempotency, manager audit queries, and redacted JSON request logs.
 - Role-scoped business forms, a manager-only active-agent directory, retained conflict drafts, duplicate-submit guards and same-request recovery after uncertain write results; see [form policy](docs/forms.md).
 - Repeatable Vitest/Testing Library component tests and Playwright three-role workflows in desktop/narrow viewports against an isolated real PostgreSQL API; see [testing guide](docs/testing.md).
 - Manager knowledge workspace for drafts, keyword indexing, publication and archive, backed by immutable snapshots, scoped access and transactional knowledge audit; see [knowledge guide](docs/knowledge.md). See also [authorized keyword and vector retrieval](docs/retrieval.md).

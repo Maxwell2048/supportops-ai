@@ -2,7 +2,7 @@ from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 
 
-SCHEMA_REVISION = "0008_job_provider"
+SCHEMA_REVISION = "0009_contact_phone"
 
 
 def make_engine(database_url: str) -> Engine:

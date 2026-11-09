@@ -164,6 +164,14 @@ export function TicketDetailPage({
           </div>
           <dl>
             <div>
+              <dt>Contact email</dt>
+              <dd>{session.user.role === "requester" ? session.user.email : ticket.requester_email ?? "Unavailable"}</dd>
+            </div>
+            <div>
+              <dt>Contact phone</dt>
+              <dd>{ticket.contact_phone ?? "Not provided"}</dd>
+            </div>
+            <div>
               <dt>Priority</dt>
               <dd>
                 <PriorityLabel priority={ticket.priority} />

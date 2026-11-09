@@ -14,7 +14,8 @@ export function CreateTicketPage({
   backHref: string;
 }) {
   const [title, setTitle] = useState(""),
-    [body, setBody] = useState("");
+    [body, setBody] = useState(""),
+    [phone, setPhone] = useState("");
   const [error, setError] = useState<ApiError | null>(null);
   const [uncertain, setUncertain] = useState(false);
   const attempt = useRef(new WriteAttempt()),
@@ -25,7 +26,7 @@ export function CreateTicketPage({
   const mutation = useMutation({
     retry: false,
     mutationFn: async () => {
-      const payload = { title: title.trim(), body: body.trim() };
+      const payload = { title: title.trim(), body: body.trim(), ...(phone.trim() ? { contact_phone: phone.trim() } : {}) };
       if (
         !payload.title ||
         !payload.body ||
@@ -129,6 +130,9 @@ export function CreateTicketPage({
               Maximum 10,000 characters. Use synthetic information in this
               demonstration.
             </p>
+            <label htmlFor="create-phone">Contact phone (optional)</label>
+            <input id="create-phone" type="tel" maxLength={40} value={phone}
+              onChange={(event) => setPhone(event.target.value)} autoComplete="tel" />
           </fieldset>
           <button
             className="button primary"

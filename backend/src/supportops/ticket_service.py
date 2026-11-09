@@ -65,7 +65,7 @@ def create_ticket(session: Session, user_id: UUID, payload: TicketCreate, key: s
     record, replay = claim(session, actor.id, COLLECTION_ID, "ticket_create", key, payload)
     if replay:
         return replay
-    ticket = Ticket(id=uuid4(), requester_id=actor.id, title=payload.title, body=payload.body)
+    ticket = Ticket(id=uuid4(), requester_id=actor.id, title=payload.title, body=payload.body, contact_phone=payload.contact_phone)
     session.add(ticket)
     session.flush()
     _event(session, ticket, actor, "created", {"status": {"from": None, "to": "open"}})

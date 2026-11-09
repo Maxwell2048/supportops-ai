@@ -82,7 +82,7 @@ def test_creation_uses_current_identity_and_replays_one_result(env):
     assert state(env)[1] == [2, 0, 1]
 
 
-@pytest.mark.parametrize("extra", [{"requester_id": str(uuid4())}, {"assignee_id": str(uuid4())}, {"status": "closed"}, {"role": "manager"}])
+@pytest.mark.parametrize("extra", [{"requester_id": str(uuid4())}, {"requester_email": "other@example.invalid"}, {"assignee_id": str(uuid4())}, {"status": "closed"}, {"role": "manager"}])
 def test_creation_cannot_inject_ownership_or_privileged_fields(env, extra):
     response = call(env, "POST", "/api/tickets", who="requester-a", payload={"title": "Test", "body": "Description", **extra})
     assert response.status_code == 422 and state(env)[1] == [1, 0, 0]
@@ -366,3 +366,29 @@ def test_list_scope_filters_and_literal_search_do_not_leak_internal_notes(env):
     assert call(env, "POST", PATH + "/messages", payload={"expected_version": 1, "visibility": "internal", "body": "secret-note-keyword"}).status_code == 201
     assert call(env, "GET", "/api/tickets", who="requester-a", params={"q": "secret-note-keyword"}).json()["items"] == []
     assert call(env, "GET", "/api/tickets", params={"q": "%' OR 1=1--"}).json()["items"] == []
+
+
+def test_optional_contact_phone_and_staff_email_are_scoped(env):
+    from supportops.models import AuditEvent
+    payload = {"title": "Contact request", "body": "Synthetic issue", "contact_phone": " +61 400 123 456 "}
+    response = call(env, "POST", "/api/tickets", who="requester-a", payload=payload, key="contact-once")
+    assert response.status_code == 201
+    ticket = response.json()
+    assert ticket["contact_phone"] == "+61 400 123 456"
+    assert call(env, "POST", "/api/tickets", who="requester-a", payload=payload, key="contact-once").json() == ticket
+    path = f"/api/tickets/{ticket['id']}"
+    assert call(env, "GET", path, who="requester-b").status_code == 404
+    assert call(env, "GET", path, who="agent-b").status_code == 404
+    owner = call(env, "GET", path, who="requester-a").json()
+    assert owner["contact_phone"] == "+61 400 123 456" and "requester_email" not in owner
+    manager = call(env, "GET", path, who="manager").json()
+    assert manager["contact_phone"] == "+61 400 123 456"
+    assert manager["requester_email"] == "requester-a@example.invalid"
+    audit = env[1].execute(select(AuditEvent.changes).where(AuditEvent.resource_id == UUID(ticket["id"]))).scalars().all()
+    assert "+61 400 123 456" not in str(audit)
+
+
+@pytest.mark.parametrize("value", ["abc", "---", "1" * 41, "123\n456", "\x00"])
+def test_invalid_contact_phone_is_rejected(env, value):
+    response = call(env, "POST", "/api/tickets", who="requester-a", payload={"title": "Contact", "body": "Synthetic", "contact_phone": value})
+    assert response.status_code == 422
