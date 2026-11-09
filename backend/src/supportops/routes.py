@@ -11,7 +11,7 @@ from supportops.models import TicketEvent, TicketMessage, User
 from supportops.schemas import EventResponse, LoginInput, MessageResponse, StaffTicketResponse, TicketResponse, TokenResponse, UserResponse
 from supportops.security import issue_token, require_auth_config, verify_password
 from supportops.schemas import MessageCreate, MessageWriteResponse, TicketCreate, TicketPage, TicketPatch, TicketQuery, TicketSummary
-from supportops import ticket_service, jobs
+from supportops import ticket_service, jobs, reviews
 from supportops.ticket_queries import list_tickets as query_tickets
 from supportops.audit_queries import list_audit_events
 from supportops.schemas import AuditPage, AuditQuery
@@ -116,3 +116,13 @@ def analysis_create(ticket_id: UUID, payload: jobs.JobCreate, user: CurrentUser,
 @router.get("/analysis-jobs/{job_id}", tags=["analysis"])
 def analysis_read(job_id: UUID, user: CurrentUser, session: DbSession):
     return jobs.read_job(session, user, job_id)
+
+@router.get("/analysis-jobs/{job_id}/suggestion", tags=["analysis"])
+def suggestion_read(job_id: UUID, user: CurrentUser, session: DbSession):
+    return reviews.get_suggestion(session, user, job_id)
+
+
+@router.post("/suggestions/{job_id}/review", tags=["analysis"])
+def suggestion_review(job_id: UUID, payload: reviews.ReviewInput, request: Request, user: CurrentUser, session: DbSession, key: IdempotencyKey):
+    session.info["request_id"] = UUID(request.state.request_id)
+    return _commit_write(session, reviews.review(session, user.id, job_id, payload, key))

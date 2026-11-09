@@ -28,7 +28,7 @@ Implemented: login/me, ticket create/list/detail/PATCH/messages/events, manager 
 | POST /api/tickets/{id}/messages | expected_version,visibility,body(1-10000) | 201 message,ticket_version; object authorization |
 | POST /api/tickets/{id}/analysis-jobs | expected_version | 202 job_id,status; manager or assigned agent; Idempotency-Key required |
 | GET /api/analysis-jobs/{id} | None | 200 status/attempts/error; current ticket scope; result exposure planned |
-| POST /api/suggestions/{id}/review | expected_version,decision,edited_body? | Planned: 200 review,message_id?,ticket_version; agent/manager |
+| POST /api/suggestions/{id}/review | expected_version,decision,edited_body? | 200 job_id,decision,message_id,ticket_version; current staff scope; id is analysis job ID |
 | GET /api/knowledge/search | q(1-500),mode(keyword/vector),limit(1-20) | 200 currently published authorized version chunks; staff only |
 | POST /api/knowledge/articles | title,body,scope,source_kind,source_reference,license_note; article_id + expected_revision for another version | 201 immutable draft/version; manager; [knowledge contract](knowledge.md) |
 | POST /api/knowledge/articles/{id}/index | version_id,expected_revision,mode; Idempotency-Key | 200 representation receipt; manager only; [retrieval contract](retrieval.md) |
@@ -44,7 +44,7 @@ Implemented: login/me, ticket create/list/detail/PATCH/messages/events, manager 
 | GET /health | None | 200 process liveness; public |
 | GET /ready | None | 200 ready / 503 missing config, unreachable DB, or schema mismatch |
 
-Current readiness requires 0006_analysis_jobs and JWT_SECRET. Login passwords accept 1-128 characters; emails are trimmed/lowercased. Default token lifetime: 900 seconds. Reject unknown fields and null characters. See [auth](auth.md), [ticket behavior](tickets.md) and [knowledge](knowledge.md).
+Current readiness requires 0007_job_review and JWT_SECRET. Login passwords accept 1-128 characters; emails are trimmed/lowercased. Default token lifetime: 900 seconds. Reject unknown fields and null characters. See [auth](auth.md), [ticket behavior](tickets.md) and [knowledge](knowledge.md).
 
 Priorities: low/normal/high/urgent. Planned suggestion categories: access/billing/bug/how_to/other; suggestions do not automatically modify tickets. Planned decisions: accepted/edited/rejected; edited requires nonempty edited_body, other decisions forbid it. The server chooses requester_id, author_id, reviewer_id, created_at, and role.
 

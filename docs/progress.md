@@ -53,7 +53,7 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 | S15 | M3 | Provider/timeouts/schema/error classes | Implemented; simulated provider verified, real inference pending | S14 |
 | S16 | M3 | Durable jobs/leases/idempotency/restart recovery | Locally verified with mock worker; real crash and model inference pending | S15 |
 | S17 | M3 | Contiguous citation checks/evidence-free refusal | Locally verified with mock provider | S15 |
-| S18 | M3 | Human review/atomic public reply/deduplication | Planned | S08,S16,S17 |
+| S18 | M3 | Human review/atomic public reply/deduplication | Backend verified; interface in progress | S08,S16,S17 |
 | S19 | M3 | Authorization/injection/knowledge-change regression | Planned | S18 |
 | S20 | M4 | Fixed data/environment/EXPLAIN/index experiments | Planned | S07 |
 | S21 | M4 | 20/10 split/manual labels/baselines/metrics/limits | Planned | S14,S17,S19 |
@@ -86,3 +86,7 @@ Implemented persistent jobs, idempotent API creation, lease fencing and a mock w
 ## S17 citation checks
 
 Implemented authorized keyword retrieval, contiguous quotation validation, current publication rechecks, and fixed no-evidence handoff. Verified 290 backend tests with synthetic data and a mock provider. See [citation policy](citations.md) and [evidence](evidence/2026-11-07-citations.md). Human review follows in S18.
+
+## S18 review backend
+
+Implemented and verified atomic human decisions, retry protection, current ticket and source checks, and evidence-free rejection. See [review](review.md) and [evidence](evidence/2026-11-09-review.md). The review interface remains in progress.
