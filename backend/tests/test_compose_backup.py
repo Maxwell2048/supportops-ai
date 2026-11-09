@@ -31,3 +31,15 @@ def test_invalid_project_rejected_without_docker(monkeypatch):
     with pytest.raises(ValueError):
         database_container('../other-project')
     assert not called
+
+
+def test_remote_docker_context_is_rejected(monkeypatch):
+    from types import SimpleNamespace
+    calls = []
+    def fake_docker(*args, **kwargs):
+        calls.append(args)
+        return SimpleNamespace(stdout='tcp://example.invalid:2376')
+    monkeypatch.setattr('compose_backup.docker', fake_docker)
+    with pytest.raises(RuntimeError):
+        database_container('testproject')
+    assert calls == [('context', 'inspect', '--format', '{{.Endpoints.docker.Host}}')]

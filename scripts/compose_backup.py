@@ -16,6 +16,9 @@ def docker(*args, **kwargs):
 def database_container(project):
     if not re.fullmatch(r'[a-z0-9][a-z0-9_-]{0,62}', project):
         raise ValueError('Use the exact local Compose project name')
+    context = docker('context', 'inspect', '--format', '{{.Endpoints.docker.Host}}', capture_output=True, text=True).stdout.strip()
+    if not context.startswith(('unix:///', 'npipe:////./pipe/')):
+        raise RuntimeError('A local Docker socket context is required')
     result = docker('ps', '--filter', f'label=com.docker.compose.project={project}',
                     '--filter', 'label=com.docker.compose.service=db', '--format', '{{.ID}}', capture_output=True, text=True)
     matches = result.stdout.splitlines()

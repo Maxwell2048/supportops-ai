@@ -23,7 +23,7 @@ python scripts/compose_backup.py --project supportops-app backup --output tmp/su
 python scripts/compose_backup.py --project supportops-app restore --input tmp/supportops-backup.dump --database restore_example
 ```
 
-The command locates the single running database container using its exact Compose project and service labels. A restore into a new database does not switch the running application to that database. Plan and verify any cutover separately. Stop the stack using `docker compose -f compose.full.yaml down`. The volume persists. Removing volumes destroys data and should only be done deliberately for a verified disposable test project.
+The command requires a local Docker socket context and locates the single running database container using its exact Compose project and service labels. A restore into a new database does not switch the running application to that database. Plan and verify any cutover separately. Stop the stack using `docker compose -f compose.full.yaml down`. The volume persists. Removing volumes destroys data and should only be done deliberately for a verified disposable test project.
 
 ## Verified scope
 
