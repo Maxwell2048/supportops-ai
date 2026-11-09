@@ -7,6 +7,10 @@ import {
   parseAgents,
   parseTicket,
   parseMessageWrite,
+  parseAnalysisJobs,
+  parseAnalysisReceipt,
+  parseSuggestion,
+  parseReviewReceipt,
 } from "./contracts.ts";
 import type { Role, TicketPatch, MessageCreate } from "./contracts.ts";
 import type { TicketFilters } from "../state/ticketState.ts";
@@ -159,6 +163,14 @@ export function createApi(fetcher: typeof fetch = fetch, timeoutMs = 15000) {
     }
   }
   return {
+    analysisJobs: (ticketId: string, token: string, signal?: AbortSignal) =>
+      request(`/tickets/${encodeURIComponent(ticketId)}/analysis-jobs`, parseAnalysisJobs, { token, signal }),
+    createAnalysis: (ticketId: string, token: string, version: number, key: string, signal?: AbortSignal) =>
+      request(`/tickets/${encodeURIComponent(ticketId)}/analysis-jobs`, parseAnalysisReceipt, { token, key, body: { expected_version: version }, signal }),
+    suggestion: (jobId: string, token: string, signal?: AbortSignal) =>
+      request(`/analysis-jobs/${encodeURIComponent(jobId)}/suggestion`, parseSuggestion, { token, signal }),
+    reviewSuggestion: (jobId: string, token: string, body: { expected_version: number; decision: "accepted" | "edited" | "rejected"; edited_body?: string }, key: string, signal?: AbortSignal) =>
+      request(`/suggestions/${encodeURIComponent(jobId)}/review`, parseReviewReceipt, { token, key, body, signal }),
     agents: (token: string, signal?: AbortSignal) =>
       request("/agents", parseAgents, { token, signal }),
     createTicket: (

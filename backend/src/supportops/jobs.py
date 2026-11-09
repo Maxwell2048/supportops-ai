@@ -55,6 +55,16 @@ def read_job(session, actor, job_id):
     return {"job_id": str(job.id), "status": job.status, "attempts": job.attempts, "error_code": job.error_code}
 
 
+def list_jobs(session, actor, ticket_id):
+    if actor.role not in {"agent", "manager"}:
+        raise ApiError(403, "forbidden", "Your current role cannot use this feature")
+    visible_ticket(session, actor, ticket_id)
+    rows = session.scalars(select(AnalysisJob).where(AnalysisJob.ticket_id == ticket_id)
+        .order_by(AnalysisJob.created_at.desc(), AnalysisJob.id.desc()).limit(20))
+    return [{"job_id": str(job.id), "status": job.status, "attempts": job.attempts,
+             "error_code": job.error_code, "review_decision": job.review_decision} for job in rows]
+
+
 def claim_job(session):
     now = session.scalar(select(func.clock_timestamp()))
     job = session.scalar(select(AnalysisJob).where(or_(

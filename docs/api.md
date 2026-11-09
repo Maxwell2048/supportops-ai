@@ -27,7 +27,9 @@ Implemented: login/me, ticket create/list/detail/PATCH/messages/events, manager 
 | PATCH /api/tickets/{id} | expected_version,status?,assignee_id?,priority?,archived?,reason?,public_reply? | 200 TicketSummary; field/state permission and actual change required |
 | POST /api/tickets/{id}/messages | expected_version,visibility,body(1-10000) | 201 message,ticket_version; object authorization |
 | POST /api/tickets/{id}/analysis-jobs | expected_version | 202 job_id,status; manager or assigned agent; Idempotency-Key required |
-| GET /api/analysis-jobs/{id} | None | 200 status/attempts/error; current ticket scope; result exposure planned |
+| GET /api/analysis-jobs/{id} | None | 200 status/attempts/error; current ticket scope |
+| GET /api/tickets/{id}/analysis-jobs | None | 200 up to 20 recent job statuses; current staff scope |
+| GET /api/analysis-jobs/{id}/suggestion | None | 200 validated suggestion; current ticket and source scope |
 | POST /api/suggestions/{id}/review | expected_version,decision,edited_body? | 200 job_id,decision,message_id,ticket_version; current staff scope; id is analysis job ID |
 | GET /api/knowledge/search | q(1-500),mode(keyword/vector),limit(1-20) | 200 currently published authorized version chunks; staff only |
 | POST /api/knowledge/articles | title,body,scope,source_kind,source_reference,license_note; article_id + expected_revision for another version | 201 immutable draft/version; manager; [knowledge contract](knowledge.md) |

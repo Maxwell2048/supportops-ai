@@ -113,6 +113,11 @@ def analysis_create(ticket_id: UUID, payload: jobs.JobCreate, user: CurrentUser,
     return _commit_write(session, jobs.create_job(session, user.id, ticket_id, payload, key))
 
 
+@router.get("/tickets/{ticket_id}/analysis-jobs", tags=["analysis"])
+def analysis_list(ticket_id: UUID, user: CurrentUser, session: DbSession):
+    return jobs.list_jobs(session, user, ticket_id)
+
+
 @router.get("/analysis-jobs/{job_id}", tags=["analysis"])
 def analysis_read(job_id: UUID, user: CurrentUser, session: DbSession):
     return jobs.read_job(session, user, job_id)

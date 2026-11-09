@@ -1,0 +1,9 @@
+feat(web): add a human review workspace to ticket details
+
+I added an analysis panel for staff that shows recent job status, cited passages, a response draft and the checks requested by the provider. Staff can start analysis, inspect a result, approve an unchanged cited draft, send an edited draft or reject it. Evidence-free results offer a human follow-up path and cannot be sent through the suggestion controls.
+
+I added a current-ticket-authorized recent job endpoint so staff can return to earlier work. I validate response structures, clear private views during authorization rechecks and route session failures through the existing session handling. An uncertain write keeps its original key and payload for a safe retry. The layout adapts to desktop and narrow screens.
+
+I verified the production build, type checks, 14 component tests and 14 desktop/narrow Chromium cases. The new panel browser cases use mocked synthetic analysis responses, while existing business flows exercise the isolated PostgreSQL API. I also verified the backend regression and focused job authorization tests. The first browser attempt failed because Chromium was absent; the rerun passed after installation.
+
+The worker remains mock-only, source authenticity does not prove claim support, and a full browser workflow against a running worker remains future work.

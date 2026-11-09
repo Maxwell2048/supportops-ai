@@ -135,9 +135,12 @@ def test_http_create_read_and_role_checks(prepared):
             first = await client.post(path, headers=headers, json={"expected_version": 1})
             replay = await client.post(path, headers=headers, json={"expected_version": 1})
             assert first.status_code == replay.status_code == 202 and first.json() == replay.json()
+            listing = await client.get(path, headers=headers)
+            assert listing.status_code == 200 and listing.json()[0]["job_id"] == first.json()["job_id"]
             job_path = "/api/analysis-jobs/" + first.json()["job_id"]
             assert (await client.get(job_path, headers=headers)).json()["status"] == "queued"
             requester = issue_token(synthetic_id("requester-a"), settings)
+            assert (await client.get(path, headers={"Authorization": f"Bearer {requester}"})).status_code == 403
             assert (await client.get(job_path, headers={"Authorization": f"Bearer {requester}"})).status_code == 403
     asyncio.run(scenario())
 

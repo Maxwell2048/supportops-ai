@@ -214,3 +214,43 @@ export function parseDetail(value: unknown, role: Role): TicketDetail {
         });
   return { ...parseTicket(value), messages, events };
 }
+
+export function parseAnalysisJobs(value: unknown) {
+  return array(value, (item) => {
+    const row = record(item);
+    if (typeof row.attempts !== "number" || !Number.isInteger(row.attempts) || row.attempts < 0 || row.attempts > 3) throw new Error("Invalid attempts");
+    return {
+      job_id: uuid(row.job_id),
+      status: choice(row.status, ["queued", "running", "succeeded", "failed"] as const),
+      attempts: row.attempts,
+      error_code: row.error_code === null ? null : text(row.error_code),
+      review_decision: row.review_decision === null ? null : choice(row.review_decision, ["accepted", "edited", "rejected"] as const),
+    };
+  });
+}
+
+export function parseAnalysisReceipt(value: unknown) {
+  const row = record(value);
+  return { job_id: uuid(row.job_id), status: choice(row.status, ["queued"] as const) };
+}
+
+export function parseSuggestion(value: unknown) {
+  const row = record(value), suggestion = record(row.suggestion);
+  return {
+    job_id: uuid(row.job_id), ticket_version: integer(row.ticket_version),
+    review_decision: row.review_decision === null ? null : choice(row.review_decision, ["accepted", "edited", "rejected"] as const),
+    suggestion: {
+      category: choice(suggestion.category, ["access", "billing", "bug", "how_to", "other"] as const),
+      suggested_priority: choice(suggestion.suggested_priority, ["low", "normal", "high", "urgent"] as const),
+      reply_draft: text(suggestion.reply_draft),
+      citations: array(suggestion.citations, (item) => { const citation = record(item); return { chunk_id: uuid(citation.chunk_id), version_id: uuid(citation.version_id), quote: text(citation.quote) }; }),
+      human_verification: array(suggestion.human_verification, text),
+    },
+  };
+}
+
+export function parseReviewReceipt(value: unknown) {
+  const row = record(value);
+  return { job_id: uuid(row.job_id), decision: choice(row.decision, ["accepted", "edited", "rejected"] as const),
+    message_id: row.message_id === null ? null : uuid(row.message_id), ticket_version: integer(row.ticket_version) };
+}
