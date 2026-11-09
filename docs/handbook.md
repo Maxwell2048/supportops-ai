@@ -6,17 +6,18 @@ This handbook records the delivered local workflow, evidence, and remaining work
 
 ## Delivered workflow
 
-1. Start the local PostgreSQL service and apply the current migrations as described in [database operations](database.md). Configure authentication using [local authentication](auth.md). Keep local credentials in the ignored environment file.
-2. Start the API and frontend using the commands in the [README](../README.md). Sign in with an activated synthetic account. Requesters can create and follow their own tickets, with an optional contact phone and their signed-in email. Agents see tickets currently assigned to them. Managers can assign agents and manage ticket state.
+For the complete local application, follow the [Compose operations guide](compose.md), including its explicit synthetic-account activation step. It starts PostgreSQL, migrations, the API, the frontend and the default mock worker. Keep credentials in the ignored environment file. The guide also covers a synthetic backup and restore to a separate database. The manual setup in the [README](../README.md) remains an alternative.
+
+1. Sign in with an activated synthetic account. Requesters can create and follow their own tickets, with an optional contact phone and their signed-in email. Agents see tickets currently assigned to them. Managers can assign agents and manage ticket state.
 3. Managers can use the Knowledge workspace to create drafts, index, publish and archive current versions. The [knowledge guide](knowledge.md) and [retrieval guide](retrieval.md) also describe the API and historical operations.
-4. Start the local mock worker from the backend directory by setting PYTHONPATH to src and running `uv run --locked python -m supportops.job_worker`. Keep that terminal open. The worker polls durable jobs. Stop it with Ctrl+C. The [job guide](jobs.md) documents the lease and retry policy.
+4. The Compose stack starts the mock worker automatically. For manual setup, start a worker as described in the [job guide](jobs.md). The default is a mock; an optional pinned local model requires the separate configuration and checks described there.
 5. Open a ticket as the assigned agent or manager. The Suggested response panel starts analysis and shows recent job statuses. Accessible published knowledge must be indexed. Review the source quotation and response. Accept, edit or reject the suggestion. An evidence-free handoff can only be rejected through the suggestion workflow; staff can write a separate reply.
 6. If the browser cannot determine whether a review request succeeded, use Retry previous request while the panel remains open. This resends the same key and payload. Job history is available after navigating back, but an unfinished client-side retry attempt is not persisted across page reloads.
 
 ## What has been verified
 
 - PostgreSQL ticket, knowledge, retrieval, job and review tests use isolated synthetic schemas. See [review backend evidence](evidence/2026-11-09-review.md) and [security evidence](evidence/2026-11-09-analysis-security.md).
-- The review interface has component coverage and desktop/narrow Chromium coverage. Its dedicated browser scenario uses mocked synthetic analysis responses. Existing ticket and knowledge browser scenarios use an isolated API and PostgreSQL fixture. See [UI evidence](evidence/2026-11-09-review-ui.md).
+- The review interface has component and desktop/narrow Chromium coverage. The earlier UI scenario used mocked responses; a later [browser check](evidence/2026-11-09-worker-browser.md) exercised an actual mock worker, API and PostgreSQL with synthetic data.
 - S14 separately exercised real 384-dimensional local embeddings and pgvector with synthetic inputs. This does not verify a real generation model. See [retrieval evidence](evidence/2026-10-27-retrieval.md).
 - A separate local generation adapter smoke check returned structured output and a matching synthetic quotation, but misclassified the sign-in example. The default worker uses a mock. An optional pinned-model worker was exercised separately; see [worker evidence](evidence/2026-11-09-pinned-worker.md).
 - Each GitHub Actions result belongs to a particular commit. The failed remote browser run and its correction are recorded in [CI follow-up](evidence/2026-11-09-ci-followup.md). Check the current commit's Actions page before asserting its result.
@@ -30,7 +31,7 @@ This handbook records the delivered local workflow, evidence, and remaining work
 | S20 SQL experiments | Initial simplified and [full-row ticket observations](evidence/2026-11-09-sql-full.md) are recorded. Extend them to other filters, cold caches, concurrent traffic, commit cost and larger datasets before proposing an index change. |
 | S21 AI evaluation | Independently review and expand the [synthetic draft cases](../evals/retrieval-cases-v1.json). The initial [retrieval observations](evidence/2026-11-09-retrieval-evaluation.md) are not a blind holdout evaluation. Use a larger corpus and a fresh independently reviewed holdout, and measure ranking, citation authenticity, claim support, refusal and latency. |
 | S22 operations | The separate [local application stack](compose.md) and an isolated synthetic restore have been verified. Complete production secret management, image pinning, scheduled backup and recovery cutover exercises. |
-| S23 CI and protection | Add the remaining worker, review and recovery checks to CI and verify failures block the intended branch. Configure branch protection in GitHub and record actual settings and permissions. |
+| S23 CI and protection | CI includes worker browser coverage and a synthetic container backup/restore check. Verify failures block the intended branch, configure branch protection in GitHub, and record actual settings and permissions. |
 | S24 Azure | Deferred at the owner's request for the local delivery. Before cloud work, obtain explicit approval for subscription, region, resource scope and cost before creating chargeable resources. Validate the current Azure service and pgvector requirements, provision with reviewed infrastructure code, use managed identity and secrets, deploy synthetic data and record the actual resource inventory and cleanup. |
 | S25-S26 operations | Verify cloud logs with a real controlled failure. Exercise application rollback and a separate database restore. Record commands, results, access controls and cleanup. |
 | S27 delivery | Refresh architecture, design decisions, contribution notes, screenshots and a demonstration video after the implementation is verified. Report real measurements and limitations. |
@@ -43,7 +44,7 @@ Run the backend and frontend commands from their stated directories in the READM
 ## Troubleshooting
 
 - If readiness reports an outdated schema, verify the target database and migrate according to [database operations](database.md). A migration is not a backup.
-- If analysis stays queued, check that the separate worker is running and using the same database. The worker is currently mock-only.
+- If analysis stays queued, check that the worker is running and using the same database. The default worker uses a mock provider.
 - If analysis reports incomplete retrieval, index every currently accessible published knowledge version before retrying. Drafts are not search candidates.
 - If a suggestion is stale or unavailable, re-run analysis. Ticket edits, assignment changes, source archive/scope changes, or an older unmarked result can require reanalysis.
 - If frontend dependency installation encounters a Windows file lock, stop project-owned development processes and retry. Do not terminate unrelated processes. Browser tests require the Chromium build installed by Playwright.
