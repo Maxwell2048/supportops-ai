@@ -57,7 +57,7 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 | S19 | M3 | Authorization/injection/knowledge-change regression | Initial synthetic regressions verified; real-model adversarial evaluation remains | S18 |
 | S20 | M4 | Fixed data/environment/EXPLAIN/index experiments | Initial synthetic experiment verified; broader workloads pending | S07 |
 | S21 | M4 | 20/10 split/manual labels/baselines/metrics/limits | Planned | S14,S17,S19 |
-| S22 | M4 | Complete Compose/startup/backup/restore | Planned | S12,S18 |
+| S22 | M4 | Complete Compose/startup/backup/restore | Local synthetic stack and isolated restore verified; production operations pending | S12,S18 |
 | S23 | M4 | Database/migration/frontend/mock CI and branch protection | Planned | S12,S19,S22 |
 | S24 | M5 | Azure/Bicep/identity/secrets/OIDC/cost/cleanup | Planned | S22,S23 |
 | S25 | M5 | Cloud logs/real failure tracing | Planned | S24 |
@@ -114,3 +114,7 @@ Added the manager workspace for current drafts, keyword indexing, publication an
 ## Pinned local generation worker
 
 Added explicit local model selection with digest checks and stored provenance. Synthetic worker checks produced both rejected and valid outputs. The default remains mock. See [evidence](evidence/2026-11-09-pinned-worker.md).
+
+## Local application stack and restore
+
+Built and ran a separate local Compose project with API, frontend and mock worker. Restored a synthetic archive to a new database and matched 15 table fingerprints. See [operations guide](compose.md) and [evidence](evidence/2026-11-09-compose.md).
