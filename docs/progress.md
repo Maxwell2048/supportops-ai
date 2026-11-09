@@ -130,3 +130,7 @@ Repeated the ticket query and 1,000-row insert measurements with the real migrat
 ## Ticket contact details
 
 Added optional phone capture and authorized staff visibility of requester account email. Verified existing data preservation, role/object restrictions and browser flows. See [evidence](evidence/2026-11-09-ticket-contact.md). Azure deployment is deferred for the local delivery at the owner request.
+
+## Generation source visibility
+
+Implemented explicit provider labels in the review workspace. Verified clean frontend installation, build, type and component checks, plus four actual worker browser cases. See [evidence](evidence/2026-11-09-provider-visibility.md). The labels do not certify output quality.

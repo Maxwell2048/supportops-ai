@@ -20,6 +20,7 @@ test("a real worker completes a no-evidence job for human review", async ({ page
   const panel = page.getByRole("region", { name: "Suggested response" });
   await panel.getByRole("button", { name: "Run analysis" }).click();
   await expect(panel.getByText("Human follow-up needed")).toBeVisible({ timeout: 20000 });
+  await expect(panel.getByText("No model invoked")).toBeVisible();
   await expect(panel.getByRole("button", { name: "Approve and send" })).toBeDisabled();
   await panel.getByRole("button", { name: "Reject suggestion" }).click();
   await expect(page.getByText("Reviewed · rejected")).toBeVisible();
@@ -59,6 +60,7 @@ test("published knowledge reaches the worker and a human sends a reviewed reply"
   const panel = page.getByRole("region", { name: "Suggested response" });
   await panel.getByRole("button", { name: "Run analysis" }).click();
   await expect(panel.getByText("Synthetic guidance: verify the sample account before changing access.")).toBeVisible({ timeout: 20000 });
+  await expect(panel.getByText("Demo provider")).toBeVisible();
   await panel.getByLabel("Response draft").fill("I verified the sample account. Please try signing in again.");
   const reviewed = page.waitForResponse((response) => response.url().includes("/api/suggestions/") && response.url().endsWith("/review") && response.request().method() === "POST");
   await panel.getByRole("button", { name: "Send edited reply" }).click();

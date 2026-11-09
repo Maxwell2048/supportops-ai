@@ -1,0 +1,5 @@
+Make generation provenance visible to reviewers
+
+I show whether a suggestion came from the demo provider, a local model, a custom provider, or no model, and I preserve a fallback for older records without provenance. This makes the default local demo clear while retaining the human review step.
+
+I verified a clean frontend dependency installation, production build, test types, 17 component tests, and four desktop and narrow browser cases against the actual local API and mock worker. An initial sandboxed dependency installation stalled and was interrupted; the subsequent network-enabled installation and checks passed. This change does not establish model accuracy, and Azure deployment remains deferred.

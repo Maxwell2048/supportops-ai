@@ -240,9 +240,15 @@ export function parseAnalysisReceipt(value: unknown) {
 
 export function parseSuggestion(value: unknown) {
   const row = record(value), suggestion = record(row.suggestion);
+  const generation = row.generation == null ? null : record(row.generation);
   return {
     job_id: uuid(row.job_id), ticket_version: integer(row.ticket_version),
     review_decision: row.review_decision === null ? null : choice(row.review_decision, ["accepted", "edited", "rejected"] as const),
+    generation: generation === null ? null : {
+      provider: generation.provider == null ? null : choice(generation.provider, ["none", "mock", "ollama", "custom"] as const),
+      model: generation.model == null ? null : text(generation.model),
+      digest: generation.digest == null ? null : text(generation.digest),
+    },
     suggestion: {
       category: choice(suggestion.category, ["access", "billing", "bug", "how_to", "other"] as const),
       suggested_priority: choice(suggestion.suggested_priority, ["low", "normal", "high", "urgent"] as const),
