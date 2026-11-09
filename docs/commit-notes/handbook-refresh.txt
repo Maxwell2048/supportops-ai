@@ -1,0 +1,5 @@
+Refresh the local delivery handbook
+
+I make the verified Compose stack the primary local startup path, explain synthetic account activation and backup guidance, and correct outdated statements about the optional pinned local worker. I also distinguish the earlier mocked review UI scenario from the later browser check using a separate worker, and record that the CI stack already checks synthetic backup and restore.
+
+I checked the handbook against the current implementation and execution evidence. The default provider remains a mock; local model quality, production operations, branch protection and Azure deployment remain open as described in the handbook.
