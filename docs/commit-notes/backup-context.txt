@@ -1,0 +1,5 @@
+fix(backup): restrict recovery tools to local Docker contexts
+
+I added an explicit Docker context check before locating a Compose database container. The backup and restore utility accepts local Unix sockets and Windows named pipes, and rejects remote TCP or SSH contexts. Existing project-name validation, overwrite protection and restore-target restrictions remain in force.
+
+I verified four focused backup safety tests, including refusal of a remote context. The full synthetic stack and restore had already been exercised locally and in the container workflow. Operators still need to protect backup files and plan any real recovery cutover.
