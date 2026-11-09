@@ -12,7 +12,7 @@ const id = "11111111-1111-4111-8111-111111111111";
 const session: Session = { key: "review-test", token: "test", expiresAt: Date.now() + 100000, user: { id, email: "agent@example.invalid", role: "agent" } };
 const ticket: TicketDetail = { id, requester_id: id, assignee_id: id, title: "Test", body: "Synthetic", status: "in_progress", priority: "normal", version: 1, archived: false, created_at: "2026-11-09T00:00:00Z", updated_at: "2026-11-09T00:00:00Z", messages: [] };
 const job = { job_id: id, status: "succeeded" as const, attempts: 1, error_code: null, review_decision: null };
-const makeSuggestion = (evidence: boolean) => ({ job_id: id, ticket_version: 1, review_decision: null, suggestion: { category: "other" as const, suggested_priority: "normal" as const, reply_draft: "Draft response", citations: evidence ? [{ chunk_id: id, version_id: id, quote: "A real source." }] : [], human_verification: ["Check account"] } });
+const makeSuggestion = (evidence: boolean) => ({ job_id: id, ticket_version: 1, review_decision: null, generation: { provider: "mock" as const, model: null, digest: null }, suggestion: { category: "other" as const, suggested_priority: "normal" as const, reply_draft: "Draft response", citations: evidence ? [{ chunk_id: id, version_id: id, quote: "A real source." }] : [], human_verification: ["Check account"] } });
 const clients: ReturnType<typeof createSessionClient>[] = [];
 afterEach(() => { vi.restoreAllMocks(); clients.splice(0).forEach((client) => client.clear()); });
 function mount() {
@@ -38,6 +38,7 @@ it("preserves the review request and key after uncertain network failure", async
     .mockResolvedValueOnce({ job_id: id, decision: "accepted", message_id: id, ticket_version: 2 });
   mount();
   await screen.findByText("A real source.");
+  expect(screen.getByText("Demo provider")).toBeInTheDocument();
   await userEvent.click(screen.getByRole("button", { name: "Approve and send" }));
   const retry = await screen.findByRole("button", { name: "Retry previous request" });
   expect(screen.getByLabelText("Response draft")).toBeDisabled();
