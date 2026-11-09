@@ -11,8 +11,11 @@ import {
   parseAnalysisReceipt,
   parseSuggestion,
   parseReviewReceipt,
+  parseKnowledgePage,
+  parseKnowledgeArticle,
+  parseIndexReceipt,
 } from "./contracts.ts";
-import type { Role, TicketPatch, MessageCreate } from "./contracts.ts";
+import type { Role, TicketPatch, MessageCreate, KnowledgeDraft } from "./contracts.ts";
 import type { TicketFilters } from "../state/ticketState.ts";
 
 export class ApiError extends Error {
@@ -163,6 +166,16 @@ export function createApi(fetcher: typeof fetch = fetch, timeoutMs = 15000) {
     }
   }
   return {
+    knowledgeArticles: (token: string, cursor: string | null, signal?: AbortSignal) =>
+      request(`/knowledge/articles?${new URLSearchParams({ limit: "20", ...(cursor ? { cursor } : {}) })}`, parseKnowledgePage, { token, signal }),
+    knowledgeArticle: (id: string, token: string, signal?: AbortSignal) =>
+      request(`/knowledge/articles/${encodeURIComponent(id)}`, parseKnowledgeArticle, { token, signal }),
+    saveKnowledge: (token: string, body: KnowledgeDraft, key: string, signal?: AbortSignal) =>
+      request("/knowledge/articles", parseKnowledgeArticle, { token, body, key, signal }),
+    indexKnowledge: (id: string, token: string, version: string, revision: number, key: string, signal?: AbortSignal) =>
+      request(`/knowledge/articles/${encodeURIComponent(id)}/index`, parseIndexReceipt, { token, key, body: { version_id: version, expected_revision: revision, mode: "keyword" }, signal }),
+    changeKnowledge: (id: string, token: string, action: "publish" | "archive", version: string, revision: number, key: string, signal?: AbortSignal) =>
+      request(`/knowledge/articles/${encodeURIComponent(id)}/${action}`, parseKnowledgeArticle, { token, key, body: { version_id: version, expected_revision: revision }, signal }),
     analysisJobs: (ticketId: string, token: string, signal?: AbortSignal) =>
       request(`/tickets/${encodeURIComponent(ticketId)}/analysis-jobs`, parseAnalysisJobs, { token, signal }),
     createAnalysis: (ticketId: string, token: string, version: number, key: string, signal?: AbortSignal) =>

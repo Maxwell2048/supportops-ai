@@ -254,3 +254,45 @@ export function parseReviewReceipt(value: unknown) {
   return { job_id: uuid(row.job_id), decision: choice(row.decision, ["accepted", "edited", "rejected"] as const),
     message_id: row.message_id === null ? null : uuid(row.message_id), ticket_version: integer(row.ticket_version) };
 }
+
+export interface KnowledgeDraft {
+  title: string;
+  body: string;
+  scope: "support" | "management";
+  source_kind: "synthetic" | "licensed";
+  source_reference: string;
+  license_note: string;
+  article_id?: string;
+  expected_revision?: number;
+}
+
+export function parseKnowledgePage(value: unknown) {
+  const row = record(value);
+  return {
+    items: array(row.items, (entry) => {
+      const item = record(entry);
+      return { article_id: uuid(item.article_id), version_id: uuid(item.version_id), number: integer(item.number),
+        title: text(item.title), scope: choice(item.scope, ["support", "management"] as const),
+        status: choice(item.status, ["draft", "published", "archived"] as const) };
+    }),
+    next_cursor: row.next_cursor === null ? null : text(row.next_cursor),
+  };
+}
+
+export function parseKnowledgeArticle(value: unknown) {
+  const row = record(value), version = record(row.version);
+  if (typeof row.archived !== "boolean") throw new Error("Invalid archive state");
+  return {
+    id: uuid(row.id), revision: row.revision == null ? null : integer(row.revision),
+    published_version_id: row.published_version_id == null ? null : uuid(row.published_version_id), archived: row.archived,
+    version: { id: uuid(version.id), title: text(version.title), body: text(version.body), number: integer(version.number),
+      scope: choice(version.scope, ["support", "management"] as const), source_kind: choice(version.source_kind, ["synthetic", "licensed"] as const),
+      source_reference: text(version.source_reference), license_note: text(version.license_note),
+      status: choice(version.status, ["draft", "published", "archived"] as const) },
+  };
+}
+
+export function parseIndexReceipt(value: unknown) {
+  const row = record(value);
+  return { version_id: uuid(row.version_id), chunk_count: integer(row.chunk_count), mode: choice(row.mode, ["keyword", "vector"] as const) };
+}

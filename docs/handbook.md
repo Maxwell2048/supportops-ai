@@ -8,7 +8,7 @@ This handbook records the delivered local workflow, evidence, and remaining work
 
 1. Start the local PostgreSQL service and apply the current migrations as described in [database operations](database.md). Configure authentication using [local authentication](auth.md). Keep local credentials in the ignored environment file.
 2. Start the API and frontend using the commands in the [README](../README.md). Sign in with an activated synthetic account. Requesters can create and follow their own tickets. Agents see tickets currently assigned to them. Managers can assign agents and manage ticket state.
-3. Knowledge is managed by manager APIs, including draft creation, indexing, publication and archive. The [knowledge guide](knowledge.md) and [retrieval guide](retrieval.md) describe the current endpoints. A dedicated knowledge management interface is not yet available.
+3. Managers can use the Knowledge workspace to create drafts, index, publish and archive current versions. The [knowledge guide](knowledge.md) and [retrieval guide](retrieval.md) also describe the API and historical operations.
 4. Start the local mock worker from the backend directory by setting PYTHONPATH to src and running `uv run --locked python -m supportops.job_worker`. Keep that terminal open. The worker polls durable jobs. Stop it with Ctrl+C. The [job guide](jobs.md) documents the lease and retry policy.
 5. Open a ticket as the assigned agent or manager. The Suggested response panel starts analysis and shows recent job statuses. Accessible published knowledge must be indexed. Review the source quotation and response. Accept, edit or reject the suggestion. An evidence-free handoff can only be rejected through the suggestion workflow; staff can write a separate reply.
 6. If the browser cannot determine whether a review request succeeded, use Retry previous request while the panel remains open. This resends the same key and payload. Job history is available after navigating back, but an unfinished client-side retry attempt is not persisted across page reloads.
@@ -34,7 +34,7 @@ This handbook records the delivered local workflow, evidence, and remaining work
 | S24 Azure | Obtain explicit approval for subscription, region, resource scope and cost before creating chargeable resources. Validate the current Azure service and pgvector requirements, provision with reviewed infrastructure code, use managed identity and secrets, deploy synthetic data and record the actual resource inventory and cleanup. |
 | S25-S26 operations | Verify cloud logs with a real controlled failure. Exercise application rollback and a separate database restore. Record commands, results, access controls and cleanup. |
 | S27 delivery | Refresh architecture, design decisions, contribution notes, screenshots and a demonstration video after the implementation is verified. Report real measurements and limitations. |
-| Product interface | Add manager knowledge management and indexing screens, durable navigation to analysis history, broader keyboard and screen-reader testing, and a complete real-worker browser scenario. |
+| Product interface | Add historical-version browsing, vector indexing, broader keyboard and screen-reader testing, and real-model worker evaluation. The independent mock worker is covered by [browser evidence](evidence/2026-11-09-worker-browser.md). |
 
 ## Validation and publication
 
