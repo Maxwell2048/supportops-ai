@@ -1,0 +1,9 @@
+feat(web): add a manager knowledge workspace
+
+I added a manager-only knowledge library with paginated articles, immutable draft creation, new versions, source and license details, keyword indexing, publication and archive controls. Current publication and draft state are displayed separately. The page retains a draft through a version conflict and asks the manager to inspect the current version before using its revision.
+
+I used the existing server authorization and idempotency contracts. An uncertain write preserves its original key and payload for retry. Requesters cannot open the manager workspace. I validated both null and omitted optional publication fields because the read endpoint omits null values.
+
+I verified the production build, type checks, 17 component tests, existing client tests and 22 Chromium E2E cases across desktop and narrow viewports. The knowledge cases use the actual API and isolated PostgreSQL database. I recorded the initial parser failure and the unrelated overlapping-install test failure before successful reruns.
+
+The workspace handles latest versions and keyword indexes. Historical browsing, vector indexing, broader accessibility work and production deployment remain open.

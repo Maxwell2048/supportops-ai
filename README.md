@@ -20,7 +20,7 @@ The original requirements are preserved in an English translation of the [projec
 - Ticket creation, authorized lists/filters/pagination, assignment, replies, status/archive changes, version conflicts, transactional events, persistent idempotency, manager audit queries, and redacted JSON request logs.
 - Role-scoped business forms, a manager-only active-agent directory, retained conflict drafts, duplicate-submit guards and same-request recovery after uncertain write results; see [form policy](docs/forms.md).
 - Repeatable Vitest/Testing Library component tests and Playwright three-role workflows in desktop/narrow viewports against an isolated real PostgreSQL API; see [testing guide](docs/testing.md).
-- Immutable knowledge snapshots with provenance/hashes, manager draft/publication/archive APIs, support/management scopes, transactional knowledge audit and four draft-first synthetic fixtures; see [knowledge guide](docs/knowledge.md). See also [authorized keyword and vector retrieval](docs/retrieval.md).
+- Manager knowledge workspace for drafts, keyword indexing, publication and archive, backed by immutable snapshots, scoped access and transactional knowledge audit; see [knowledge guide](docs/knowledge.md). See also [authorized keyword and vector retrieval](docs/retrieval.md).
 - M0 permission, state, data model, API, and data policy drafts; S01-S27 milestone checklist.
 
 ## Run locally

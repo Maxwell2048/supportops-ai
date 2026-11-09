@@ -106,3 +106,7 @@ A synthetic local model call returned structured output and an authentic quote a
 ## S20 initial SQL observation
 
 Executed a 5,000-row temporary synthetic query-plan comparison without changing application indexes. See [experiment evidence](evidence/2026-11-09-sql-experiment.md). Full-workload and repeated observations remain open.
+
+## Knowledge workspace
+
+Added the manager workspace for current drafts, keyword indexing, publication and archive. The complete 22-case browser suite and 17 component tests passed with synthetic fixtures. See [evidence](evidence/2026-11-09-knowledge-ui.md).

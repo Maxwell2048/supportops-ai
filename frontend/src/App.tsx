@@ -14,6 +14,7 @@ import { LoginPage } from "./pages/LoginPage.tsx";
 import { TicketListPage } from "./pages/TicketListPage.tsx";
 import { TicketDetailPage } from "./pages/TicketDetailPage.tsx";
 import { CreateTicketPage } from "./pages/CreateTicketPage.tsx";
+import { KnowledgePage } from "./pages/KnowledgePage.tsx";
 
 export interface Session {
   key: string;
@@ -77,7 +78,7 @@ function Workspace({
         <p className="nav-heading">Workspace</p>
         <nav aria-label="Main navigation">
           <a
-            className="nav-link active"
+            className={`nav-link ${route.kind !== "knowledge" ? "active" : ""}`}
             href={backHref}
             aria-current={route.kind === "list" ? "page" : undefined}
           >
@@ -86,6 +87,9 @@ function Workspace({
               ↗
             </span>
           </a>
+          {session.user.role === "manager" && <a className={`nav-link ${route.kind === "knowledge" ? "active" : ""}`} href="#/knowledge" aria-current={route.kind === "knowledge" ? "page" : undefined}>
+            <span aria-hidden="true">▥</span>Knowledge
+          </a>}
         </nav>
         <div className="sidebar-note">
           <span className="live-dot" aria-hidden="true" />
@@ -114,7 +118,7 @@ function Workspace({
         <header className="topbar">
           <span>
             Workspace <span className="breadcrumb-separator">/</span>{" "}
-            <strong>Tickets</strong>
+            <strong>{route.kind === "knowledge" ? "Knowledge" : "Tickets"}</strong>
           </span>
           <span className="workspace-tag">Support operations</span>
         </header>
@@ -136,6 +140,8 @@ function Workspace({
             />
           ) : route.kind === "create" ? (
             <CreateTicketPage session={session} backHref={backHref} />
+          ) : route.kind === "knowledge" ? (
+            <KnowledgePage session={session} />
           ) : route.kind === "detail" ? (
             <TicketDetailPage
               key={route.id}
