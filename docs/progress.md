@@ -110,3 +110,7 @@ Executed a 5,000-row temporary synthetic query-plan comparison without changing 
 ## Knowledge workspace
 
 Added the manager workspace for current drafts, keyword indexing, publication and archive. The complete 22-case browser suite and 17 component tests passed with synthetic fixtures. See [evidence](evidence/2026-11-09-knowledge-ui.md).
+
+## Pinned local generation worker
+
+Added explicit local model selection with digest checks and stored provenance. Synthetic worker checks produced both rejected and valid outputs. The default remains mock. See [evidence](evidence/2026-11-09-pinned-worker.md).

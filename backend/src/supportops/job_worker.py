@@ -6,19 +6,23 @@ from sqlalchemy.orm import Session
 
 from supportops.config import load_settings
 from supportops.db import make_engine
-from supportops.generation import MockGeneration
+from supportops.generation import MockGeneration, OllamaGeneration
 from supportops.jobs import claim_job, execute_job
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--once", action="store_true")
+    parser.add_argument("--model", help="Local Ollama generation model")
+    parser.add_argument("--digest", help="Full SHA-256 digest of the local model")
     args = parser.parse_args()
+    if bool(args.model) != bool(args.digest):
+        parser.error("--model and --digest must be supplied together")
     settings = load_settings()
     if not settings.database_url:
         raise SystemExit("DATABASE_URL is required")
     engine = make_engine(settings.database_url)
-    provider = MockGeneration()
+    provider = OllamaGeneration(args.model, settings.embedding_url, digest=args.digest) if args.model else MockGeneration()
     try:
         while True:
             with Session(engine) as session, session.begin():

@@ -46,7 +46,7 @@ Implemented: login/me, ticket create/list/detail/PATCH/messages/events, manager 
 | GET /health | None | 200 process liveness; public |
 | GET /ready | None | 200 ready / 503 missing config, unreachable DB, or schema mismatch |
 
-Current readiness requires 0007_job_review and JWT_SECRET. Login passwords accept 1-128 characters; emails are trimmed/lowercased. Default token lifetime: 900 seconds. Reject unknown fields and null characters. See [auth](auth.md), [ticket behavior](tickets.md) and [knowledge](knowledge.md).
+Current readiness requires 0008_job_provider and JWT_SECRET. Login passwords accept 1-128 characters; emails are trimmed/lowercased. Default token lifetime: 900 seconds. Reject unknown fields and null characters. See [auth](auth.md), [ticket behavior](tickets.md) and [knowledge](knowledge.md).
 
 Priorities: low/normal/high/urgent. Planned suggestion categories: access/billing/bug/how_to/other; suggestions do not automatically modify tickets. Planned decisions: accepted/edited/rejected; edited requires nonempty edited_body, other decisions forbid it. The server chooses requester_id, author_id, reviewer_id, created_at, and role.
 

@@ -1,0 +1,7 @@
+feat(worker): support pinned local generation models
+
+I added an explicit local model option to the worker requiring both a model name and full digest. The generation adapter verifies the installed model before and after inference. Successful and failed attempts record provider and model provenance on the job, while evidence-free handoffs record that no provider was called. The default worker mode remains the deterministic mock.
+
+I added a disposable synthetic verification script for the full local worker, keyword retrieval, citation validation and database path. One check before the provenance migration succeeded. After the migration, two checks failed safely with invalid citation and invalid output, and a third succeeded with a validated quotation and recorded model digest. The model classified an access issue as bug and high priority, so the observations do not establish model quality.
+
+I verified 14 focused generator cases and 303 backend tests with zero skips, and upgraded local development from 0007 to 0008 while checking counts in 14 existing tables. The model reported an Apache-2.0 license locally. License provenance, adversarial evaluation, production deployment and model quality remain unverified.

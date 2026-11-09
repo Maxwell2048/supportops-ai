@@ -2,7 +2,7 @@
 
 An AI-assisted ticket and knowledge collaboration platform for a fictional software support team. This portfolio project demonstrates full-stack development, authorization, data consistency, AI evaluation, and eventual Azure delivery.
 
-**Current stage: S18 human review and its staff interface are locally verified with a mock worker. S19 security regressions and a standalone local model smoke check are recorded. Further evaluation and deployment remain open.**
+**Current stage: S18 human review and its staff interface are locally verified with a mock worker. S19 security regressions and an optional pinned local model worker are recorded. Further evaluation and deployment remain open.**
 
 The original requirements are preserved in an English translation of the [project brief](docs/planning/project-brief.md). Its planning-only statements describe the archived starting point. The current local repository is `D:\SupportOps AI`.
 

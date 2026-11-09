@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from supportops.dependencies import visible_ticket
 from supportops.errors import ApiError
-from supportops.generation import GenerationError, GenerationFailure, Suggestion
+from supportops.generation import GenerationError, GenerationFailure, MockGeneration, OllamaGeneration, Suggestion
 from supportops.idempotency import claim, finish
 from supportops.models import AnalysisJob, User
 from supportops import retrieval
@@ -127,22 +127,28 @@ def execute_job(engine, job_id, token, provider):
         handoff = Suggestion(category="other", suggested_priority="normal",
             reply_draft="A support agent will review your request.", citations=[],
             human_verification=["No relevant published knowledge was found. Review this request manually."])
-        return finish_job(engine, job_id, token, result=handoff.model_dump(mode="json"), validated=True)
+        return finish_job(engine, job_id, token, result=handoff.model_dump(mode="json"), validated=True, provider_info=("none", None, None))
+    if isinstance(provider, OllamaGeneration):
+        provider_info = ("ollama", provider.model, provider.digest)
+    elif isinstance(provider, MockGeneration):
+        provider_info = ("mock", None, None)
+    else:
+        provider_info = ("custom", None, None)
     try:
         evidence = [json.dumps({"chunk_id": str(hit.chunk_id), "version_id": str(hit.version_id), "text": hit.text}) for hit in hits]
         result = Suggestion.model_validate(provider.generate(ticket_text[:10000], evidence))
         validate_citations(result, hits)
-        return finish_job(engine, job_id, token, result=result.model_dump(mode="json"), hits=hits, validated=True)
+        return finish_job(engine, job_id, token, result=result.model_dump(mode="json"), hits=hits, validated=True, provider_info=provider_info)
     except InvalidCitation:
-        return finish_job(engine, job_id, token, error="invalid_citation")
+        return finish_job(engine, job_id, token, error="invalid_citation", provider_info=provider_info)
     except (ValidationError, TypeError, ValueError):
-        return finish_job(engine, job_id, token, error="invalid_output")
+        return finish_job(engine, job_id, token, error="invalid_output", provider_info=provider_info)
     except GenerationError as error:
         transient = error.kind in {GenerationFailure.TIMEOUT, GenerationFailure.UNAVAILABLE}
-        return finish_job(engine, job_id, token, error=error.kind.value, transient=transient)
+        return finish_job(engine, job_id, token, error=error.kind.value, transient=transient, provider_info=provider_info)
 
 
-def finish_job(engine, job_id, token, *, result=None, error=None, transient=False, hits=(), validated=False):
+def finish_job(engine, job_id, token, *, result=None, error=None, transient=False, hits=(), validated=False, provider_info=None):
     with Session(engine) as session, session.begin():
         now = session.scalar(select(func.clock_timestamp()))
         job = session.scalar(select(AnalysisJob).where(
@@ -173,6 +179,8 @@ def finish_job(engine, job_id, token, *, result=None, error=None, transient=Fals
         job.error_code = error
         job.result = result if not error else None
         job.validation_version = "s17-v1" if result and not error and validated else None
+        if provider_info:
+            job.generation_provider, job.generation_model, job.generation_digest = provider_info
         job.lease_token = job.lease_expires_at = None
         job.updated_at = now
         return True
