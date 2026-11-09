@@ -55,7 +55,7 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 | S17 | M3 | Contiguous citation checks/evidence-free refusal | Locally verified with mock provider | S15 |
 | S18 | M3 | Human review/atomic public reply/deduplication | Backend and review interface verified with mock provider | S08,S16,S17 |
 | S19 | M3 | Authorization/injection/knowledge-change regression | Initial synthetic regressions verified; real-model adversarial evaluation remains | S18 |
-| S20 | M4 | Fixed data/environment/EXPLAIN/index experiments | Planned | S07 |
+| S20 | M4 | Fixed data/environment/EXPLAIN/index experiments | Initial synthetic experiment verified; broader workloads pending | S07 |
 | S21 | M4 | 20/10 split/manual labels/baselines/metrics/limits | Planned | S14,S17,S19 |
 | S22 | M4 | Complete Compose/startup/backup/restore | Planned | S12,S18 |
 | S23 | M4 | Database/migration/frontend/mock CI and branch protection | Planned | S12,S19,S22 |
@@ -102,3 +102,7 @@ Verified role/object boundaries, changed tickets, untrusted source instructions 
 ## Local generation compatibility
 
 A synthetic local model call returned structured output and an authentic quote after a grammar compatibility fix. The model misclassified the sign-in example. The worker remains mock-only. See [local generation evidence](evidence/2026-11-09-local-generation.md).
+
+## S20 initial SQL observation
+
+Executed a 5,000-row temporary synthetic query-plan comparison without changing application indexes. See [experiment evidence](evidence/2026-11-09-sql-experiment.md). Full-workload and repeated observations remain open.

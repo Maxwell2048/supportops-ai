@@ -1,0 +1,7 @@
+perf(sql): record a reproducible synthetic ticket query experiment
+
+I added an isolated local experiment that creates 5,000 deterministic temporary ticket-shaped rows, compares an assignee/status ordered page with and without a temporary composite index, checks that both pages contain the same 21 records, and prints PostgreSQL EXPLAIN ANALYZE results and environment metadata. The script only accepts a local dedicated test database and its temporary objects are removed at transaction end.
+
+In the recorded execution PostgreSQL chose a sequential scan and sort before the index, and a bitmap index/heap scan and sort after it. The observed execution times were 0.180 ms and 0.035 ms for this single synthetic run. I documented the reduced projection, warm local environment, small fixed distribution and unmeasured write and concurrency costs. I did not change the application schema or assert a production speedup.
+
+I ran the experiment successfully and recorded the actual PostgreSQL, Python and operating system versions. Further full-workload and repeated measurements remain open.

@@ -1,0 +1,7 @@
+# Synthetic ticket-list query experiment
+
+Executed 2026-11-09 on Windows 11, Python 3.14.7 and local PostgreSQL 17.11. From `backend`, run `uv run --locked python ../scripts/experiment_ticket_query.py`. The script uses a dedicated local test database and creates a temporary table with 5,000 deterministic synthetic rows. The table and index are removed by PostgreSQL at transaction end. The same ordered page of 21 IDs was returned before and after adding a temporary composite index.
+
+The simplified query filters assignee and status and sorts by creation time and ID, reflecting the shape of the ticket-list query. It selects only ID and timestamp and uses a synthetic distribution, so it is not the full application workload. In this one execution, the baseline plan used a sequential scan and top-N sort, with execution time 0.180 ms. With the index, PostgreSQL chose a bitmap index/heap scan and top-N sort, with execution time 0.035 ms. The query matched 50 rows and returned 21. These are single warm local observations, not a general speedup or production benchmark. Actual write costs, concurrent workload, full-row projection and other filter distributions remain unmeasured.
+
+The application's existing index was not changed. Broader experiments should reproduce full ticket data and queries, control cache and concurrency, and collect repeated measurements before considering a migration.
