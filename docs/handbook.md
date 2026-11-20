@@ -1,6 +1,6 @@
 # SupportOps AI delivery handbook
 
-Last reviewed: 2026-11-09 (Australia/Perth).
+Last reviewed: 2026-11-20 (Australia/Perth).
 
 This handbook records the delivered local workflow, evidence, and remaining work. The project is a synthetic portfolio application. Generation defaults to a deterministic mock and supports an explicitly pinned local Ollama model. A draft requires a staff decision before a public reply can be created.
 
@@ -9,15 +9,17 @@ This handbook records the delivered local workflow, evidence, and remaining work
 For the complete local application, follow the [Compose operations guide](compose.md), including its explicit synthetic-account activation step. It starts PostgreSQL, migrations, the API, the frontend and the default mock worker. Keep credentials in the ignored environment file. The guide also covers a synthetic backup and restore to a separate database. The manual setup in the [README](../README.md) remains an alternative.
 
 1. Sign in with an activated synthetic account. Requesters can create and follow their own tickets, with an optional contact phone and their signed-in email. Agents see tickets currently assigned to them. Managers can assign agents and manage ticket state.
-3. Managers can use the Knowledge workspace to create drafts, index, publish and archive current versions. The [knowledge guide](knowledge.md) and [retrieval guide](retrieval.md) also describe the API and historical operations.
-4. The Compose stack starts the mock worker automatically. For manual setup, start a worker as described in the [job guide](jobs.md). The default is a mock; an optional pinned local model requires the separate configuration and checks described there.
-5. Open a ticket as the assigned agent or manager. The Suggested response panel starts analysis and shows recent job statuses. Accessible published knowledge must be indexed. Review the source quotation and response. Accept, edit or reject the suggestion. An evidence-free handoff can only be rejected through the suggestion workflow; staff can write a separate reply.
-6. If the browser cannot determine whether a review request succeeded, use Retry previous request while the panel remains open. This resends the same key and payload. Job history is available after navigating back, but an unfinished client-side retry attempt is not persisted across page reloads.
+2. Managers can use the Knowledge workspace to create drafts, index, publish and archive current versions. The [knowledge guide](knowledge.md) and [retrieval guide](retrieval.md) also describe the API and historical operations.
+3. The Compose stack starts the mock worker automatically. For manual setup, start a worker as described in the [job guide](jobs.md). The default is a mock; an optional pinned local model requires the separate configuration and checks described there.
+4. Open a ticket as the assigned agent or manager. Authorized staff see the requester's account email and any supplied phone. The Suggested response panel starts analysis and shows recent job statuses. Each suggestion is labeled with its stored generation source: the demo provider, a local model, a custom provider, or no model; older results without recorded provenance are marked as such. The label describes provenance, not output quality. Accessible published knowledge must be indexed. Review the source quotation and response. Accept, edit or reject the suggestion. An evidence-free handoff can only be rejected through the suggestion workflow; staff can write a separate reply.
+5. If the browser cannot determine whether a review request succeeded, use Retry previous request while the panel remains open. This resends the same key and payload. Job history is available after navigating back, but an unfinished client-side retry attempt is not persisted across page reloads.
 
 ## What has been verified
 
 - PostgreSQL ticket, knowledge, retrieval, job and review tests use isolated synthetic schemas. See [review backend evidence](evidence/2026-11-09-review.md) and [security evidence](evidence/2026-11-09-analysis-security.md).
 - The review interface has component and desktop/narrow Chromium coverage. The earlier UI scenario used mocked responses; a later [browser check](evidence/2026-11-09-worker-browser.md) exercised an actual mock worker, API and PostgreSQL with synthetic data.
+- Generation source labels passed component tests and four desktop/narrow browser cases against the actual local API and mock worker; those cases checked the demo-provider and no-model labels. See [provider visibility evidence](evidence/2026-11-09-provider-visibility.md).
+- Optional requester phone capture and authorized staff visibility of contact details passed PostgreSQL integration and Chromium cases, and the 0008 to 0009 migration preserved existing rows. Phone ownership is not verified. See [ticket contact evidence](evidence/2026-11-09-ticket-contact.md).
 - S14 separately exercised real 384-dimensional local embeddings and pgvector with synthetic inputs. This does not verify a real generation model. See [retrieval evidence](evidence/2026-10-27-retrieval.md).
 - A separate local generation adapter smoke check returned structured output and a matching synthetic quotation, but misclassified the sign-in example. The default worker uses a mock. An optional pinned-model worker was exercised separately; see [worker evidence](evidence/2026-11-09-pinned-worker.md).
 - Each GitHub Actions result belongs to a particular commit. The failed remote browser run and its correction are recorded in [CI follow-up](evidence/2026-11-09-ci-followup.md). Check the current commit's Actions page before asserting its result.
