@@ -249,6 +249,18 @@ export function parseSuggestion(value: unknown) {
       model: generation.model == null ? null : text(generation.model),
       digest: generation.digest == null ? null : text(generation.digest),
     },
+    tool_calls: row.tool_calls == null ? [] : array(row.tool_calls, (item) => {
+      const call = record(item);
+      const args = call.arguments == null ? null : record(call.arguments);
+      return {
+        tool: text(call.tool),
+        planner: choice(call.planner, ["model", "system"] as const),
+        status: choice(call.status, ["ok", "rejected", "budget_exceeded", "stopped"] as const),
+        reason: call.reason == null ? null : text(call.reason),
+        result_count: typeof call.result_count === "number" && Number.isSafeInteger(call.result_count) && call.result_count >= 0 ? call.result_count : 0,
+        query: args && typeof args.query === "string" ? args.query : null,
+      };
+    }),
     suggestion: {
       category: choice(suggestion.category, ["access", "billing", "bug", "how_to", "other"] as const),
       suggested_priority: choice(suggestion.suggested_priority, ["low", "normal", "high", "urgent"] as const),

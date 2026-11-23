@@ -12,6 +12,10 @@ type Pending = { kind: "create"; key: string; version: number } | {
   body: { expected_version: number; decision: Decision; edited_body?: string };
 };
 
+function toolLabel(tool: string) {
+  return tool === "search_knowledge" ? "Knowledge search" : tool === "ticket_history" ? "Ticket history" : `Unknown tool ${tool}`;
+}
+
 export function AnalysisPanel({ ticket, session }: { ticket: TicketDetail; session: Session }) {
   const client = useQueryClient();
   const [selected, setSelected] = useState<string | null>(null);
@@ -121,6 +125,7 @@ export function AnalysisPanel({ ticket, session }: { ticket: TicketDetail; sessi
           <div className="analysis-result-meta"><span>Category · {suggestion.data.suggestion.category.replaceAll("_", " ")}</span><span>Suggested priority · {suggestion.data.suggestion.suggested_priority}</span>
             <span>{suggestion.data.generation?.provider === "mock" ? "Demo provider" : suggestion.data.generation?.provider === "ollama" ? `Local model · ${suggestion.data.generation.model ?? "unknown"}` : suggestion.data.generation?.provider === "none" ? "No model invoked" : suggestion.data.generation?.provider === "custom" ? "Custom provider" : "Provider not recorded"}</span></div>
           {suggestion.data.suggestion.citations.length > 0 ? <div className="analysis-evidence"><h3>Source evidence</h3>{suggestion.data.suggestion.citations.map((citation, index) => <blockquote key={`${citation.chunk_id}-${index}`}><p>{citation.quote}</p><small>Source {citation.version_id.slice(0, 8)} · passage {citation.chunk_id.slice(0, 8)}</small></blockquote>)}</div> : <div className="analysis-alert"><strong>Human follow-up needed</strong><p>No matching evidence was found. Reject this suggestion and write your own reply.</p></div>}
+          {suggestion.data.tool_calls.length > 0 && <div className="analysis-checks"><h3>Read-only tool calls</h3><ul>{suggestion.data.tool_calls.map((call, index) => <li key={index}>{toolLabel(call.tool)}{call.query ? ` “${call.query}”` : ""} · {call.status === "ok" ? `${call.result_count} result${call.result_count === 1 ? "" : "s"}` : call.status === "rejected" ? `Rejected by server (${call.reason ?? "not allowed"})` : call.status === "budget_exceeded" ? "Skipped: call limit reached" : "Stopped: access changed"}{call.planner === "system" ? " · server baseline" : ""}</li>)}</ul></div>}
           {suggestion.data.suggestion.human_verification.length > 0 && <div className="analysis-checks"><h3>Check before responding</h3><ul>{suggestion.data.suggestion.human_verification.map((item, index) => <li key={index}>{item}</li>)}</ul></div>}
           <label htmlFor="analysis-draft">Response draft</label>
           <textarea id="analysis-draft" rows={5} maxLength={10000} value={draft} disabled={busy || uncertain || !!suggestion.data.review_decision} onChange={(event) => setDraft(event.target.value)} />

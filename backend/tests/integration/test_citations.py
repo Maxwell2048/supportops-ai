@@ -95,8 +95,8 @@ def test_unindexed_publication_is_failure_not_no_evidence(prepared):
 def test_archive_during_generation_rejects_result(prepared):
     article_id = setup_source(prepared)
     class Archive(MockGeneration):
-        def generate(self, ticket, evidence):
-            response = super().generate(ticket, evidence)
+        def generate(self, ticket, evidence, context=None):
+            response = super().generate(ticket, evidence, context)
             with Session(prepared) as session, session.begin():
                 article = session.get(KnowledgeArticle, article_id)
                 knowledge_service.change_publication(session, synthetic_id("manager"), article_id,
