@@ -287,6 +287,7 @@ class AnalysisJob(Base):
     generation_provider: Mapped[str | None] = mapped_column(String(16))
     generation_model: Mapped[str | None] = mapped_column(String(128))
     generation_digest: Mapped[str | None] = mapped_column(String(64))
+    tool_trace: Mapped[list | None] = mapped_column(JSONB(none_as_null=True))
     review_decision: Mapped[str | None] = mapped_column(String(16))
     reviewer_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
     review_message_id: Mapped[UUID | None] = mapped_column(ForeignKey("ticket_messages.id", ondelete="RESTRICT"))

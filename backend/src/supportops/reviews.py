@@ -70,6 +70,7 @@ def get_suggestion(session, actor, job_id):
     suggestion = validated_suggestion(session, actor, job)
     return {"job_id": str(job.id), "ticket_version": job.ticket_version, "review_decision": job.review_decision,
             "generation": {"provider": job.generation_provider, "model": job.generation_model, "digest": job.generation_digest},
+            "tool_calls": job.tool_trace or [],
             "suggestion": suggestion.model_dump(mode="json")}
 
 
