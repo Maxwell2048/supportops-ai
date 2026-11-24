@@ -1,0 +1,11 @@
+fix(review): replay a completed review before re-validating evidence
+
+I moved the idempotency claim in review() so it runs right after the current actor, staff role and locked ticket-scope checks, and before validated_suggestion(). Previously evidence was re-validated first. If a reviewer's reply had been sent and its receipt stored, but the cited knowledge article was archived before the client retried with the same Idempotency-Key (for example after a lost response), the retry returned 409 stale_suggestion. The frontend then reported a failure for a reply that customers had already received.
+
+The authorization rule is unchanged: current role and object authorization still precede any cached replay, so a reassigned reviewer gets 404 and a downgraded reviewer gets 403 even with the original key. Only the evidence check now follows the replay decision. A new claim is still validated, and current sources are still share-locked, before anything is written. If validation fails, the claim placeholder rolls back with the request because both are in the same transaction and the route commits only on success. Idempotency records are scoped to the actor, so a replay only ever returns a receipt the same reviewer already received.
+
+I added three integration tests: same key and body after archiving returns the identical receipt with one message; a new key after archiving still returns 409 stale_suggestion with no new message and no leftover idempotency record; and a replay after reassignment or role downgrade is denied with 404 or 403. I updated docs/review.md and docs/state-transitions.md to describe the order.
+
+Validation: 342 backend tests passed with zero skips against local PostgreSQL through scripts/test_backend.py. With the original reviews.py restored temporarily, only the new replay test failed, with stale_suggestion. Evidence: docs/evidence/2026-11-24-review-replay.md.
+
+Limitations: a reused key with a different body now reports idempotency_conflict before evidence checks instead of stale_suggestion; both are 409 and write nothing. A replayed receipt does not mean the cited sources are still current. I did not re-run frontend or browser tests because the frontend is unchanged.
