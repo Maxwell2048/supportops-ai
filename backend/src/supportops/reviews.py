@@ -83,10 +83,14 @@ def review(session, actor_id, job_id, payload, key):
         raise ApiError(404, "not_found", "The suggestion does not exist or is not accessible")
     job = session.scalar(select(AnalysisJob).where(AnalysisJob.id == job_id).with_for_update().execution_options(populate_existing=True))
     ticket = visible_ticket(session, actor, job.ticket_id, lock=True)
-    suggestion = validated_suggestion(session, actor, job)
+    # Current role and object authorization run before any replay. A completed review is then
+    # replayed from its stored receipt without re-validating evidence: a source archived after the
+    # message was sent must not turn a lost-response retry into a false failure. A new claim is
+    # validated before any write; if validation fails, the placeholder rolls back with the request.
     record, replay = claim(session, actor.id, job.id, "suggestion_review", key, payload)
     if replay:
         return replay
+    suggestion = validated_suggestion(session, actor, job)
     _version(ticket, payload.expected_version)
     if job.review_decision is not None:
         raise ApiError(409, "already_reviewed", "This suggestion has already been reviewed")
