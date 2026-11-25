@@ -219,3 +219,62 @@ def test_default_job_path_does_not_import_langgraph():
     env = {**os.environ, "PYTHONPATH": str(source)}
     output = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True, check=True)
     assert output.stdout.strip() == "False"
+
+
+def test_worst_case_routing_fits_the_recursion_backstop(monkeypatch):
+    # The longest normal run (every round used) needs exactly the limit: the input step, two per round and finish.
+    # One step fewer must already fire, so the backstop catches any extra step a routing defect would add.
+    assert agent_graph.RECURSION_LIMIT == 2 * MAX_ROUNDS + 2
+    fake_run_call(monkeypatch)
+    agent_graph.gather(None, "job", "token", Planner(SCENARIOS["round_limit"]), TICKET, TITLE)
+    monkeypatch.setattr(agent_graph, "RECURSION_LIMIT", 2 * MAX_ROUNDS + 1)
+    with pytest.raises(ToolStopped):
+        agent_graph.gather(None, "job", "token", Planner(SCENARIOS["round_limit"]), TICKET, TITLE)
+
+
+def test_recursion_backstop_stops_with_a_defined_code_and_the_trace(monkeypatch):
+    monkeypatch.setattr(agent_graph, "RECURSION_LIMIT", 2)
+    executed = fake_run_call(monkeypatch)
+    planner = Planner(SCENARIOS["round_limit"])
+    with pytest.raises(ToolStopped) as stopped:
+        agent_graph.gather(None, "job", "token", planner, TICKET, TITLE)
+    assert stopped.value.code == agent_graph.LIMIT_ERROR == "tool_loop_limit"
+    # The calls that ran before the limit stay in the trace; the baseline is not added after a defect.
+    assert [(row["round"], row["tool"], row["status"]) for row in stopped.value.trace] == [(1, "ticket_history", "ok")]
+    assert executed == [("ticket_history", {"limit": 10})] and len(planner.seen) == 1
+
+
+def test_recursion_backstop_becomes_a_non_transient_job_failure(monkeypatch):
+    from supportops import jobs
+
+    monkeypatch.setattr(agent_graph, "RECURSION_LIMIT", 2)
+    fake_run_call(monkeypatch)
+    job = SimpleNamespace(requester_id="agent", ticket_id="ticket", ticket_version=1)
+    ticket = SimpleNamespace(version=1, archived=False, title=TITLE, body="The account locked.")
+
+    class FakeSession:
+        def __init__(self, engine):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def scalar(self, statement):
+            return job
+
+        def get(self, model, key):
+            return SimpleNamespace(active=True, role="agent")
+
+    finished = []
+    monkeypatch.setattr(jobs, "Session", FakeSession)
+    monkeypatch.setattr(jobs, "visible_ticket", lambda session, actor, ticket_id: ticket)
+    monkeypatch.setattr(jobs, "finish_job", lambda *args, **kwargs: finished.append((args, kwargs)) or True)
+    assert jobs.execute_job(None, "job", "token", Planner(SCENARIOS["round_limit"]), loop="langgraph")
+    (args, kwargs), = finished
+    assert args == (None, "job", "token")
+    assert kwargs["error"] == "tool_loop_limit" and not kwargs.get("transient", False)
+    assert [row["tool"] for row in kwargs["tool_trace"]] == ["ticket_history"]
+    assert "result" not in kwargs and kwargs["provider_info"] == ("custom", None, None)
