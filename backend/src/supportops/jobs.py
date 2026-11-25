@@ -99,7 +99,9 @@ def renew_lease(session, job_id, token):
     return True
 
 
-def execute_job(engine, job_id, token, provider):
+def execute_job(engine, job_id, token, provider, *, loop="handwritten"):
+    # Resolved before any job work so an unknown loop is a configuration error, not a job failure.
+    gather = agent_tools.gatherer(loop)
     # Read under current authorization and release the transaction before inference.
     with Session(engine) as session:
         job = session.scalar(select(AnalysisJob).where(
@@ -128,7 +130,7 @@ def execute_job(engine, job_id, token, provider):
     trace = []
     try:
         # Each tool call renews the lease and re-checks current access in its own transaction.
-        gathered = agent_tools.gather(engine, job_id, token, provider, ticket_text, title)
+        gathered = gather(engine, job_id, token, provider, ticket_text, title)
         hits, trace = gathered.hits, gathered.trace
         if not hits:
             handoff = Suggestion(category="other", suggested_priority="normal",

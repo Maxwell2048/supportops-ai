@@ -20,6 +20,8 @@ Analysis jobs let the model choose which read-only tools to call before a draft 
 
 Providers without a `plan` method keep the previous behavior: the server runs one baseline search on their behalf.
 
+The loop is orchestrated by a hand-written loop by default. `ANALYSIS_LOOP=langgraph` selects an equivalent LangGraph graph that uses the same server-side enforcement; see [optional LangGraph orchestration](langgraph-tool-loop.md).
+
 ## Trace
 
 `analysis_jobs.tool_trace` (migration 0010) records each call: round, planner (`model` or `system`), tool name, status (`ok`, `rejected`, `budget_exceeded`, `stopped`), result count, validated arguments, and for rejections the reason and failing field types. Rejected arguments are not stored. The suggestion endpoint returns the trace as `tool_calls`, and the review workspace lists it as text.
