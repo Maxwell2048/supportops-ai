@@ -1,6 +1,6 @@
 # Progress and staged tasks
 
-Updated: 2026-11-23 (Australia/Perth).
+Updated: 2026-11-25 (Australia/Perth).
 
 States: planned = unimplemented; drafted = design only; implemented = artifacts exist; verified = actual execution evidence. M1 S05-S08, M2 S09-S12 and M3 S13-S14 are locally verified. Generation provider boundaries begin at S15.
 
@@ -142,3 +142,7 @@ Implemented an allow-listed knowledge search and ticket history loop with strict
 ## Review replay after a source change
 
 Implemented replay of a completed review's stored receipt before evidence re-validation, after the current role and ticket-scope checks. Verified 342 PostgreSQL backend tests with zero skips, including three new cases for replay after an archived source, a new key after archiving and denial after reassignment or role downgrade. See [evidence](evidence/2026-11-24-review-replay.md).
+
+## Optional LangGraph orchestration
+
+Implemented an optional LangGraph `StateGraph` for the analysis tool loop, selected with `ANALYSIS_LOOP=langgraph`; the hand-written loop remains the default. Both orchestrations share one server-side ledger for validation, budgets, per-call authorization through `run_call`, the trace and evidence. The graph runs without a checkpointer, refuses to run with LangSmith or LangChain tracing enabled, and turns its recursion backstop into a non-transient `tool_loop_limit` job failure that keeps the trace. Verified locally: 113 backend unit tests passed, including 25 parity tests that require identical traces, refusals, budget enforcement, errors and evidence from both orchestrations and 3 backstop tests; 265 PostgreSQL integration tests were skipped because no database was reachable, including the 20 tool-loop cases now run under both orchestrations and the stored backstop case. See [design](langgraph-tool-loop.md) and [evidence](evidence/2026-11-25-langgraph-tool-loop.md). Database integration, real-model runs on the graph path and remote CI remain unverified.
