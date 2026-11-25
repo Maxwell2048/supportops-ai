@@ -138,3 +138,7 @@ Implemented explicit provider labels in the review workspace. Verified clean fro
 ## Controlled read-only tool use
 
 Implemented an allow-listed knowledge search and ticket history loop with strict arguments, a call budget, per-call lease renewal and access re-checks, an additive baseline search and a stored trace shown to reviewers. Verified 339 PostgreSQL backend tests with zero skips, 19 component tests, clean frontend build and 24 browser cases with a separate mock worker. Three local pinned-model runs produced validated citations, but the model's own queries found nothing and it repeated out-of-range arguments. See [design](agent-tools.md), [ADR 0011](adr/0011-controlled-read-only-tool-use.md) and [evidence](evidence/2026-11-23-agent-tools.md). Model quality and adversarial tool use remain unevaluated.
+
+## Review replay after a source change
+
+Implemented replay of a completed review's stored receipt before evidence re-validation, after the current role and ticket-scope checks. Verified 342 PostgreSQL backend tests with zero skips, including three new cases for replay after an archived source, a new key after archiving and denial after reassignment or role downgrade. See [evidence](evidence/2026-11-24-review-replay.md).
