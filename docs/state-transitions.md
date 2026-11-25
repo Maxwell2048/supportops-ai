@@ -30,7 +30,7 @@ Retry temporary timeouts/service failures with backoff; revoked permissions, inv
 
 - Suggestions: pending -> accepted / edited / rejected; terminal decisions cannot change again.
 - Accepted/edited creates exactly one public message and updates reviewer, ticket version, and audit atomically. Rejected creates no public message. Evidence-free results may only be rejected; humans reply independently.
-- Closed/archived tickets cannot publish suggestions. Changed ticket or knowledge content requires reanalysis: 409/stale_suggestion.
+- Closed/archived tickets cannot publish suggestions. Changed ticket or knowledge content requires reanalysis: 409/stale_suggestion. A completed review retried with its original Idempotency-Key and body returns the stored receipt even if a cited source changed afterwards; current role and assignment are still checked first.
 
 ## Knowledge (S13 locally verified)
 

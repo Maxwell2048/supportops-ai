@@ -70,6 +70,51 @@ def test_stale_source_and_reassignment_cannot_leak_or_publish(prepared):
         assert error.value.status_code == 404
 
 
+def accepted_then_archived(engine):
+    from supportops.models import KnowledgeArticle
+    job_id = completed(engine)
+    with Session(engine) as session, session.begin():
+        receipt = review(session, synthetic_id("agent-a"), job_id, ReviewInput(expected_version=1, decision="accepted"), "sent-review")
+    with Session(engine) as session, session.begin():
+        session.execute(update(KnowledgeArticle).values(archived=True))
+    return job_id, receipt
+
+
+def test_completed_review_replays_after_cited_source_is_archived(prepared):
+    job_id, receipt = accepted_then_archived(prepared)
+    with Session(prepared) as session, session.begin():
+        replay = review(session, synthetic_id("agent-a"), job_id, ReviewInput(expected_version=1, decision="accepted"), "sent-review")
+        assert replay == receipt and replay.body["message_id"] is not None
+        assert session.scalar(select(func.count()).select_from(TicketMessage)) == 1
+
+
+def test_new_review_key_after_archive_is_still_stale_and_leaves_no_claim(prepared):
+    from supportops.models import IdempotencyRecord
+    job_id, _ = accepted_then_archived(prepared)
+    with pytest.raises(ApiError) as error:
+        with Session(prepared) as session, session.begin():
+            review(session, synthetic_id("agent-a"), job_id, ReviewInput(expected_version=2, decision="accepted"), "new-review")
+    assert error.value.code == "stale_suggestion"
+    with Session(prepared) as session:
+        assert session.scalar(select(func.count()).select_from(TicketMessage)) == 1
+        assert session.scalar(select(func.count()).select_from(IdempotencyRecord).where(IdempotencyRecord.key == "new-review")) == 0
+
+
+def test_replay_still_requires_current_assignment_and_staff_role(prepared):
+    job_id, _ = accepted_then_archived(prepared)
+    accepted = ReviewInput(expected_version=1, decision="accepted")
+    with Session(prepared) as session, session.begin():
+        session.execute(update(Ticket).where(Ticket.id == synthetic_id("ticket-1")).values(assignee_id=synthetic_id("agent-b")))
+        with pytest.raises(ApiError) as error:
+            review(session, synthetic_id("agent-a"), job_id, accepted, "sent-review")
+        assert error.value.status_code == 404
+    with Session(prepared) as session, session.begin():
+        session.execute(update(User).where(User.id == synthetic_id("agent-a")).values(role="requester"))
+        with pytest.raises(ApiError) as error:
+            review(session, synthetic_id("agent-a"), job_id, accepted, "sent-review")
+        assert error.value.status_code == 403
+
+
 def test_legacy_results_require_reanalysis(prepared):
     job_id = completed(prepared, with_evidence=False)
     with Session(prepared) as session, session.begin():
