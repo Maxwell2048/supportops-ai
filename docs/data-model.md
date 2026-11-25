@@ -36,6 +36,7 @@ erDiagram
 | ai_suggestions | Planned unique job FK, category/priority/draft/checks/evidence/review, reviewer FK, model/prompt versions, reviewed_at |
 | suggestion_sources | Planned suggestion/chunk/version FKs, quote/hash; contiguous original-text validation |
 | audit_events | actor FK/role snapshot, resource_type=ticket, ticket resource FK, action/result=success, request UUID, version, allowlisted changes/time; unique(resource,version) |
+| mcp_tool_calls | Migration 0011. One row per MCP tool call: request UUID, nullable actor FK/role snapshot, allow-listed tool or `unknown`, outcome, requested ticket UUID without FK, returned object IDs (at most 20), result count, time. No argument values. See [MCP server](mcp.md) |
 | idempotency_records | actor FK, nonnull resource UUID, operation/key/hash, successful response status/body/time; unique(actor,resource,operation,key) |
 
 Separate knowledge_versions distinguishes logical articles from immutable historical content. Generic idempotency supports current ticket and knowledge writes; future reviews/jobs retain their planned direct association.
