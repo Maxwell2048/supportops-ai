@@ -1,6 +1,6 @@
 # Progress and staged tasks
 
-Updated: 2026-11-23 (Australia/Perth).
+Updated: 2026-11-25 (Australia/Perth).
 
 States: planned = unimplemented; drafted = design only; implemented = artifacts exist; verified = actual execution evidence. M1 S05-S08, M2 S09-S12 and M3 S13-S14 are locally verified. Generation provider boundaries begin at S15.
 
@@ -138,3 +138,7 @@ Implemented explicit provider labels in the review workspace. Verified clean fro
 ## Controlled read-only tool use
 
 Implemented an allow-listed knowledge search and ticket history loop with strict arguments, a call budget, per-call lease renewal and access re-checks, an additive baseline search and a stored trace shown to reviewers. Verified 339 PostgreSQL backend tests with zero skips, 19 component tests, clean frontend build and 24 browser cases with a separate mock worker. Three local pinned-model runs produced validated citations, but the model's own queries found nothing and it repeated out-of-range arguments. See [design](agent-tools.md), [ADR 0011](adr/0011-controlled-read-only-tool-use.md) and [evidence](evidence/2026-11-23-agent-tools.md). Model quality and adversarial tool use remain unevaluated.
+
+## Optional LangGraph orchestration
+
+Implemented an optional LangGraph `StateGraph` for the analysis tool loop, selected with `ANALYSIS_LOOP=langgraph`; the hand-written loop remains the default. Both orchestrations share one server-side ledger for validation, budgets, per-call authorization through `run_call`, the trace and evidence. The graph runs without a checkpointer and refuses to run with LangSmith or LangChain tracing enabled. Verified locally: 110 backend unit tests passed, including 25 parity tests that require identical traces, refusals, budget enforcement, errors and evidence from both orchestrations; 264 PostgreSQL integration tests were skipped because no database was reachable, including the 20 tool-loop cases now run under both orchestrations. See [design](langgraph-tool-loop.md) and [evidence](evidence/2026-11-25-langgraph-tool-loop.md). Database integration, real-model runs on the graph path and remote CI remain unverified.
