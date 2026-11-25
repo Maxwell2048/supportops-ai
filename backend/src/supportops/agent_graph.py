@@ -14,17 +14,21 @@ import os
 from typing import TypedDict
 
 from langchain_core.runnables import RunnableConfig
+from langgraph.errors import GraphRecursionError
 from langgraph.graph import END, START, StateGraph
 
-from supportops.agent_tools import MAX_ROUNDS, ToolLoop
+from supportops.agent_tools import MAX_ROUNDS, ToolLoop, ToolStopped
 
 # LangChain components export runs to LangSmith when these variables are set. Ticket text and
 # retrieved passages must not leave the deployment, so the graph refuses to run with them enabled.
 TRACING_VARIABLES = ("LANGSMITH_TRACING", "LANGSMITH_TRACING_V2", "LANGCHAIN_TRACING", "LANGCHAIN_TRACING_V2")
 
-# Each round is two steps (plan, execute) and the final step is ``finish``. The round counter in the
-# state is the real bound; the recursion limit is only a backstop against a routing defect.
+# LangGraph counts the input as a step, each round adds two (plan, execute) and ``finish`` adds one, so the
+# longest normal run needs exactly 2 * MAX_ROUNDS + 2. The round counter in the state is the real bound; this
+# limit is a tight backstop, so any extra step caused by a routing defect stops the job.
 RECURSION_LIMIT = 2 * MAX_ROUNDS + 2
+# Job error code (at most 32 characters) recorded when the backstop fires.
+LIMIT_ERROR = "tool_loop_limit"
 
 
 class LoopState(TypedDict):
@@ -91,7 +95,12 @@ def gather(engine, job_id, token, provider, ticket_text, title):
     """Drop-in replacement for ``agent_tools.gather`` that runs the loop as a LangGraph graph."""
     ensure_no_external_tracing()
     loop = ToolLoop(engine, job_id, token, provider, ticket_text, title)
-    GRAPH.invoke({"round": 1, "last_round": 0, "requested": []},
-                 config={"configurable": {"tool_loop": loop}, "recursion_limit": RECURSION_LIMIT})
+    try:
+        GRAPH.invoke({"round": 1, "last_round": 0, "requested": []},
+                     config={"configurable": {"tool_loop": loop}, "recursion_limit": RECURSION_LIMIT})
+    except GraphRecursionError:
+        # Normal routing always fits RECURSION_LIMIT, so this means a routing defect. Stop the job
+        # as a defined, non-transient failure that keeps the calls already recorded; retrying would repeat it.
+        raise ToolStopped(LIMIT_ERROR, loop.trace) from None
     # ``finish`` ran inside the graph; read the result from the ledger rather than from graph state.
     return loop.result
