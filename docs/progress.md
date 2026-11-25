@@ -1,6 +1,6 @@
 # Progress and staged tasks
 
-Updated: 2026-11-05 (Australia/Perth).
+Updated: 2026-11-23 (Australia/Perth).
 
 States: planned = unimplemented; drafted = design only; implemented = artifacts exist; verified = actual execution evidence. M1 S05-S08, M2 S09-S12 and M3 S13-S14 are locally verified. Generation provider boundaries begin at S15.
 
@@ -58,8 +58,8 @@ States: planned = unimplemented; drafted = design only; implemented = artifacts 
 | S20 | M4 | Fixed data/environment/EXPLAIN/index experiments | Full-row synthetic query and insert observations verified; broader workloads pending | S07 |
 | S21 | M4 | 20/10 split/manual labels/baselines/metrics/limits | Synthetic draft baseline measured; independent review and broader evaluation pending | S14,S17,S19 |
 | S22 | M4 | Complete Compose/startup/backup/restore | Local synthetic stack and isolated restore verified; production operations pending | S12,S18 |
-| S23 | M4 | Database/migration/frontend/mock CI and branch protection | Planned | S12,S19,S22 |
-| S24 | M5 | Azure/Bicep/identity/secrets/OIDC/cost/cleanup | Planned | S22,S23 |
+| S23 | M4 | Database/migration/frontend/mock CI and branch protection | Implemented: CI runs backend, browser and isolated stack restore checks; remote results are recorded per commit; failure blocking and branch protection unverified | S12,S19,S22 |
+| S24 | M5 | Azure/Bicep/identity/secrets/OIDC/cost/cleanup | Deferred at the owner's request for the local delivery | S22,S23 |
 | S25 | M5 | Cloud logs/real failure tracing | Planned | S24 |
 | S26 | M5 | Release/app rollback/independent data restore | Planned | S25 |
 | S27 | M5 | README/ADRs/video/measurements/contribution evidence | Planned | S20,S21,S23,S26 |
@@ -134,3 +134,7 @@ Added optional phone capture and authorized staff visibility of requester accoun
 ## Generation source visibility
 
 Implemented explicit provider labels in the review workspace. Verified clean frontend installation, build, type and component checks, plus four actual worker browser cases. See [evidence](evidence/2026-11-09-provider-visibility.md). The labels do not certify output quality.
+
+## Controlled read-only tool use
+
+Implemented an allow-listed knowledge search and ticket history loop with strict arguments, a call budget, per-call lease renewal and access re-checks, an additive baseline search and a stored trace shown to reviewers. Verified 339 PostgreSQL backend tests with zero skips, 19 component tests, clean frontend build and 24 browser cases with a separate mock worker. Three local pinned-model runs produced validated citations, but the model's own queries found nothing and it repeated out-of-range arguments. See [design](agent-tools.md), [ADR 0011](adr/0011-controlled-read-only-tool-use.md) and [evidence](evidence/2026-11-23-agent-tools.md). Model quality and adversarial tool use remain unevaluated.

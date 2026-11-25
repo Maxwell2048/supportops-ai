@@ -1,0 +1,7 @@
+docs(delivery): align the handbook and progress table with delivered features
+
+I renumbered the delivered workflow steps, which skipped from 1 to 3 after the earlier startup steps were merged into the Compose introduction. I added the generation source labels and the requester contact details to the review step, and I linked their execution evidence in the verified section so reviewers can see what the labels and contact fields do and do not establish.
+
+I also synchronized docs/progress.md with the handbook. The update date now reflects this review, S23 records that CI runs backend, browser and isolated stack restore checks while failure blocking and branch protection remain unverified, and S24 records that Azure is deferred at the owner's request rather than merely planned.
+
+This is a documentation-only change. I checked each new statement against the existing evidence files and the CI workflow, and I ran the repository language check and Git whitespace check. I did not run backend, frontend or CI checks because no code changed, and I make no new claim about a remote Actions result.

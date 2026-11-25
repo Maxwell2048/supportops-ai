@@ -21,6 +21,7 @@ The original requirements are preserved in an English translation of the [projec
 - Role-scoped business forms, a manager-only active-agent directory, retained conflict drafts, duplicate-submit guards and same-request recovery after uncertain write results; see [form policy](docs/forms.md).
 - Repeatable Vitest/Testing Library component tests and Playwright three-role workflows in desktop/narrow viewports against an isolated real PostgreSQL API; see [testing guide](docs/testing.md).
 - Manager knowledge workspace for drafts, keyword indexing, publication and archive, backed by immutable snapshots, scoped access and transactional knowledge audit; see [knowledge guide](docs/knowledge.md). See also [authorized keyword and vector retrieval](docs/retrieval.md).
+- Controlled read-only tool use for analysis: the model may request knowledge search and ticket history, while the server validates each call, re-checks access per call and records a trace for reviewers; see [tool use](docs/agent-tools.md).
 - M0 permission, state, data model, API, and data policy drafts; S01-S27 milestone checklist.
 
 ## Run locally

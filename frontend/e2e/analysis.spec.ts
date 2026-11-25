@@ -61,6 +61,9 @@ test("published knowledge reaches the worker and a human sends a reviewed reply"
   await panel.getByRole("button", { name: "Run analysis" }).click();
   await expect(panel.getByText("Synthetic guidance: verify the sample account before changing access.")).toBeVisible({ timeout: 20000 });
   await expect(panel.getByText("Demo provider")).toBeVisible();
+  await expect(panel.getByText("Read-only tool calls")).toBeVisible();
+  await expect(panel.getByText(/^Ticket history · \d+ results?$/)).toBeVisible();
+  await expect(panel.getByText(/^Knowledge search “Sample access resolution” · \d+ results?$/)).toBeVisible();
   await panel.getByLabel("Response draft").fill("I verified the sample account. Please try signing in again.");
   const reviewed = page.waitForResponse((response) => response.url().includes("/api/suggestions/") && response.url().endsWith("/review") && response.request().method() === "POST");
   await panel.getByRole("button", { name: "Send edited reply" }).click();

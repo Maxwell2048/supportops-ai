@@ -12,9 +12,8 @@ from supportops.errors import ApiError
 from supportops.generation import GenerationError, GenerationFailure, MockGeneration, OllamaGeneration, Suggestion
 from supportops.idempotency import claim, finish
 from supportops.models import AnalysisJob, User
-from supportops import retrieval
+from supportops import agent_tools
 from supportops.citations import InvalidCitation, lock_current_sources, validate_citations
-from supportops.retrieval_schemas import SearchQuery
 from supportops.ticket_service import _actor, _version
 
 
@@ -116,39 +115,47 @@ def execute_job(engine, job_id, token, provider):
             ticket = visible_ticket(session, actor, job.ticket_id)
             if ticket.version != job.ticket_version or ticket.archived:
                 raise ApiError(409, "ticket_changed", "Ticket changed")
-            ticket_text = ticket.title + "\n" + ticket.body
-            found = retrieval.search(session, actor, SearchQuery(q=ticket.title[:500], mode="keyword"), None)
-            if found.indexed_versions < found.available_versions:
-                raise ApiError(503, "retrieval_incomplete", "Knowledge indexing is incomplete")
-            hits = found.items
+            ticket_text = (ticket.title + "\n" + ticket.body)[:10000]
+            title = ticket.title[:500]
         except ApiError:
             return finish_job(engine, job_id, token, error="retrieval_or_access_unavailable")
-    if not hits:
-        handoff = Suggestion(category="other", suggested_priority="normal",
-            reply_draft="A support agent will review your request.", citations=[],
-            human_verification=["No relevant published knowledge was found. Review this request manually."])
-        return finish_job(engine, job_id, token, result=handoff.model_dump(mode="json"), validated=True, provider_info=("none", None, None))
     if isinstance(provider, OllamaGeneration):
         provider_info = ("ollama", provider.model, provider.digest)
     elif isinstance(provider, MockGeneration):
         provider_info = ("mock", None, None)
     else:
         provider_info = ("custom", None, None)
+    trace = []
     try:
+        # Each tool call renews the lease and re-checks current access in its own transaction.
+        gathered = agent_tools.gather(engine, job_id, token, provider, ticket_text, title)
+        hits, trace = gathered.hits, gathered.trace
+        if not hits:
+            handoff = Suggestion(category="other", suggested_priority="normal",
+                reply_draft="A support agent will review your request.", citations=[],
+                human_verification=["No relevant published knowledge was found. Review this request manually."])
+            return finish_job(engine, job_id, token, result=handoff.model_dump(mode="json"), validated=True,
+                              provider_info=("none", None, None), tool_trace=trace)
         evidence = [json.dumps({"chunk_id": str(hit.chunk_id), "version_id": str(hit.version_id), "text": hit.text}) for hit in hits]
-        result = Suggestion.model_validate(provider.generate(ticket_text[:10000], evidence))
+        extra = {"context": gathered.context} if getattr(provider, "plan", None) and gathered.context else {}
+        result = Suggestion.model_validate(provider.generate(ticket_text, evidence, **extra))
         validate_citations(result, hits)
-        return finish_job(engine, job_id, token, result=result.model_dump(mode="json"), hits=hits, validated=True, provider_info=provider_info)
+        return finish_job(engine, job_id, token, result=result.model_dump(mode="json"), hits=hits, validated=True,
+                          provider_info=provider_info, tool_trace=trace)
+    except agent_tools.ToolStopped as stop:
+        if stop.code == "lease_lost":
+            return False
+        return finish_job(engine, job_id, token, error=stop.code, provider_info=provider_info, tool_trace=stop.trace)
     except InvalidCitation:
-        return finish_job(engine, job_id, token, error="invalid_citation", provider_info=provider_info)
+        return finish_job(engine, job_id, token, error="invalid_citation", provider_info=provider_info, tool_trace=trace)
     except (ValidationError, TypeError, ValueError):
-        return finish_job(engine, job_id, token, error="invalid_output", provider_info=provider_info)
+        return finish_job(engine, job_id, token, error="invalid_output", provider_info=provider_info, tool_trace=trace)
     except GenerationError as error:
         transient = error.kind in {GenerationFailure.TIMEOUT, GenerationFailure.UNAVAILABLE}
-        return finish_job(engine, job_id, token, error=error.kind.value, transient=transient, provider_info=provider_info)
+        return finish_job(engine, job_id, token, error=error.kind.value, transient=transient, provider_info=provider_info, tool_trace=trace)
 
 
-def finish_job(engine, job_id, token, *, result=None, error=None, transient=False, hits=(), validated=False, provider_info=None):
+def finish_job(engine, job_id, token, *, result=None, error=None, transient=False, hits=(), validated=False, provider_info=None, tool_trace=None):
     with Session(engine) as session, session.begin():
         now = session.scalar(select(func.clock_timestamp()))
         job = session.scalar(select(AnalysisJob).where(
@@ -181,6 +188,7 @@ def finish_job(engine, job_id, token, *, result=None, error=None, transient=Fals
         job.validation_version = "s17-v1" if result and not error and validated else None
         if provider_info:
             job.generation_provider, job.generation_model, job.generation_digest = provider_info
+        job.tool_trace = tool_trace or None
         job.lease_token = job.lease_expires_at = None
         job.updated_at = now
         return True
