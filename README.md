@@ -22,6 +22,7 @@ The original requirements are preserved in an English translation of the [projec
 - Repeatable Vitest/Testing Library component tests and Playwright three-role workflows in desktop/narrow viewports against an isolated real PostgreSQL API; see [testing guide](docs/testing.md).
 - Manager knowledge workspace for drafts, keyword indexing, publication and archive, backed by immutable snapshots, scoped access and transactional knowledge audit; see [knowledge guide](docs/knowledge.md). See also [authorized keyword and vector retrieval](docs/retrieval.md).
 - Controlled read-only tool use for analysis: the model may request knowledge search and ticket history, while the server validates each call, re-checks access per call and records a trace for reviewers; see [tool use](docs/agent-tools.md). An optional LangGraph orchestration of the same loop keeps all enforcement on the server; see [LangGraph tool loop](docs/langgraph-tool-loop.md).
+- A read-only MCP server (Streamable HTTP, separate process) lets external MCP clients list and read the caller's tickets, public ticket history and scoped knowledge with the REST API's own token, role and object checks and a per-call audit row; see [MCP server](docs/mcp.md).
 - M0 permission, state, data model, API, and data policy drafts; S01-S27 milestone checklist.
 
 ## Run locally
@@ -126,6 +127,7 @@ Tasks, dependencies, acceptance, and next steps live in [progress](docs/progress
 - [Component tests and isolated browser regression](docs/testing.md)
 - [Knowledge versions, publication and history permissions](docs/knowledge.md)
 - [Local application stack and recovery](docs/compose.md)
+- [Read-only MCP server](docs/mcp.md)
 - [Delivery handbook and remaining acceptance](docs/handbook.md)
 - [GitHub setup and commit policy](docs/git-workflow.md)
 - [Foundation decision](docs/adr/0001-foundation-and-scope.md)

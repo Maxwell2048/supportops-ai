@@ -73,7 +73,7 @@ def main():
         restore(db, archive, target)
         tables = ['users', 'tickets', 'ticket_messages', 'ticket_events', 'idempotency_records', 'audit_events',
                   'knowledge_articles', 'knowledge_versions', 'knowledge_events', 'knowledge_chunks', 'embedding_profiles',
-                  'knowledge_embeddings', 'knowledge_indexes', 'analysis_jobs', 'alembic_version']
+                  'knowledge_embeddings', 'knowledge_indexes', 'analysis_jobs', 'mcp_tool_calls', 'alembic_version']
         for table in tables:
             sql = f"SELECT count(*)::text || ':' || md5(coalesce(string_agg(row_to_json(t)::text, '|' ORDER BY row_to_json(t)::text),'')) FROM public.{table} t"
             original = subprocess.check_output(['docker', 'exec', db, 'sh', '-c', 'exec psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -c "$1"', 'sh', sql], text=True).strip()

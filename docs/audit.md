@@ -4,6 +4,8 @@ Date: 2026-10-22 (Australia/Perth). Migration: 0003_audit_events. [Execution evi
 
 S13 adds a separate FK-backed immutable knowledge audit stream in0004, queried at /api/knowledge/articles/{id}/events. The ticket-only table/endpoint described here remains intact; see [knowledge transaction policy](knowledge.md). This avoids inserting article IDs into a ticket resource FK.
 
+Migration 0011 adds a third, read-oriented stream, `mcp_tool_calls`, written in the same transaction as each MCP tool call, including refusals; see [MCP server](mcp.md). It never stores argument values.
+
 ## Why this follows ticket writes
 
 S07 makes ticket changes correct. S08 identifies who changed what through which request. Establishing the transaction/tracing contract before business pages gives them reliable outcomes, and future human AI review can reuse it.

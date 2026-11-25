@@ -294,3 +294,31 @@ class AnalysisJob(Base):
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class McpToolCall(Base):
+    """One row per MCP tool call: who called which tool with what outcome, and which objects it touched.
+
+    Argument values are never stored; only validated object IDs and counts.
+    """
+
+    __tablename__ = "mcp_tool_calls"
+    __table_args__ = (
+        CheckConstraint("actor_role IS NULL OR actor_role IN ('requester','agent','manager')", name="ck_mcp_role"),
+        CheckConstraint("tool IN ('list_my_tickets','get_ticket','ticket_history','search_knowledge','unknown')", name="ck_mcp_tool"),
+        CheckConstraint("outcome IN ('ok','invalid_session','forbidden','unknown_tool','invalid_arguments','not_found')", name="ck_mcp_outcome"),
+        CheckConstraint("jsonb_typeof(result_ids) = 'array' AND jsonb_array_length(result_ids) <= 20 AND result_count >= 0", name="ck_mcp_results"),
+        Index("ix_mcp_calls_created", "created_at", "id"),
+        Index("ix_mcp_calls_actor_created", "actor_id", "created_at", "id"),
+    )
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    request_id: Mapped[UUID] = mapped_column()
+    actor_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    actor_role: Mapped[str | None] = mapped_column(String(20))
+    tool: Mapped[str] = mapped_column(String(32))
+    outcome: Mapped[str] = mapped_column(String(24))
+    ticket_id: Mapped[UUID | None] = mapped_column()
+    result_ids: Mapped[list] = mapped_column(JSONB, server_default=text("'[]'::jsonb"))
+    result_count: Mapped[int] = mapped_column(Integer, server_default="0")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
