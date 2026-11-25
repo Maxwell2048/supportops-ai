@@ -112,22 +112,46 @@ def run_call(engine, job_id, token, name, args):
         return TOOLS[name][2](session, actor, ticket, args)
 
 
-def gather(engine, job_id, token, provider, ticket_text, title):
-    """Run the bounded planning loop and return authorized evidence, context and a trace."""
-    planner = getattr(provider, "plan", None)
-    specs = tool_specs()
-    trace, observations, context, hits = [], [], [], {}
-    used, baseline_done, baseline_ids = 0, False, []
+class ToolLoop:
+    """Server-side ledger shared by every orchestration of the analysis tool loop.
 
-    def execute(call, round_number, source, *, budgeted=True):
-        nonlocal used, baseline_done
+    It owns the call budget, argument validation, authorized execution through ``run_call``,
+    the audit trace and the collected evidence. Orchestrators (the hand-written loop below and
+    the optional LangGraph graph in ``agent_graph``) only decide which method runs next; they
+    never execute tools or change the budget themselves.
+    """
+
+    def __init__(self, engine, job_id, token, provider, ticket_text, title):
+        self.engine, self.job_id, self.token = engine, job_id, token
+        self.ticket_text, self.title = ticket_text, title
+        self.planner = getattr(provider, "plan", None)
+        self.specs = tool_specs()
+        self.trace, self.observations, self.context, self.hits = [], [], [], {}
+        self.used, self.baseline_done, self.baseline_ids = 0, False, []
+        self.result = None
+
+    @property
+    def exhausted(self):
+        return self.used >= MAX_CALLS
+
+    def plan(self, round_number):
+        """Ask the planner for the next calls; its answer is untrusted until ``execute`` validates it."""
+        if self.planner is None:
+            return [ToolCall(name="search_knowledge", arguments={"query": self.title})] if round_number == 1 else []
+        return self.planner(self.ticket_text, self.observations, self.specs)
+
+    def run_round(self, round_number, requested):
+        for call in requested:
+            self.execute(call, round_number, "model" if self.planner else "system")
+
+    def execute(self, call, round_number, source, *, budgeted=True):
         entry = {"round": round_number, "planner": source, "tool": call.name[:64], "status": "ok", "result_count": 0}
-        trace.append(entry)
+        self.trace.append(entry)
         if budgeted:
-            if used >= MAX_CALLS:
+            if self.used >= MAX_CALLS:
                 entry["status"] = "budget_exceeded"
                 return
-            used += 1
+            self.used += 1
         tool = TOOLS.get(call.name)
         try:
             if tool is None:
@@ -142,41 +166,60 @@ def gather(engine, job_id, token, provider, ticket_text, title):
                 entry["errors"] = sorted({".".join(str(part) for part in item["loc"])[:40] + ":" + item["type"]
                                           for item in error.errors()})[:5]
             # The planner learns what failed so it can correct the next call.
-            observations.append({"tool": entry["tool"], "error": entry["reason"], **({"details": entry["errors"]} if "errors" in entry else {})})
+            self.observations.append({"tool": entry["tool"], "error": entry["reason"], **({"details": entry["errors"]} if "errors" in entry else {})})
             return
         entry["arguments"] = args.model_dump()
         try:
-            observation, found, rows = run_call(engine, job_id, token, call.name, args)
+            observation, found, rows = run_call(self.engine, self.job_id, self.token, call.name, args)
         except ToolStopped as stop:
             entry["status"] = "stopped"
-            raise ToolStopped(stop.code, trace) from None
-        is_baseline = call.name == "search_knowledge" and args.query.strip() == title.strip() and args.limit == 5
+            raise ToolStopped(stop.code, self.trace) from None
+        is_baseline = call.name == "search_knowledge" and args.query.strip() == self.title.strip() and args.limit == 5
         for hit in found:
-            hits.setdefault(hit.chunk_id, hit)
-            if is_baseline and hit.chunk_id not in baseline_ids:
-                baseline_ids.append(hit.chunk_id)
-        context.extend(rows)
-        baseline_done = baseline_done or is_baseline
+            self.hits.setdefault(hit.chunk_id, hit)
+            if is_baseline and hit.chunk_id not in self.baseline_ids:
+                self.baseline_ids.append(hit.chunk_id)
+        self.context.extend(rows)
+        self.baseline_done = self.baseline_done or is_baseline
         entry["result_count"] = len(found) if call.name == "search_knowledge" else len(rows)
-        observations.append({"tool": call.name, "arguments": entry["arguments"], "result": observation})
+        self.observations.append({"tool": call.name, "arguments": entry["arguments"], "result": observation})
 
+    def finish(self, last_round):
+        if not self.baseline_done:
+            # The planner may add evidence and context but cannot replace the baseline authorized title search,
+            # so tool use never yields less evidence than the fixed pipeline.
+            self.execute(ToolCall(name="search_knowledge", arguments={"query": self.title}), last_round + 1, "system", budgeted=False)
+        # Baseline passages are kept first so the 20-passage evidence cap can never drop them.
+        ordered = [self.hits[chunk_id] for chunk_id in self.baseline_ids] + [
+            hit for chunk_id, hit in self.hits.items() if chunk_id not in self.baseline_ids]
+        self.result = Gathered(hits=ordered[:20], context=list(dict.fromkeys(self.context))[-20:], trace=self.trace)
+        return self.result
+
+
+def gather(engine, job_id, token, provider, ticket_text, title):
+    """Run the bounded planning loop and return authorized evidence, context and a trace."""
+    loop = ToolLoop(engine, job_id, token, provider, ticket_text, title)
     last_round = 0
     for round_number in range(1, MAX_ROUNDS + 1):
-        if used >= MAX_CALLS:
+        if loop.exhausted:
             break
-        if planner is None:
-            requested = [ToolCall(name="search_knowledge", arguments={"query": title})] if round_number == 1 else []
-        else:
-            requested = planner(ticket_text, observations, specs)
+        requested = loop.plan(round_number)
         if not requested:
             break
         last_round = round_number
-        for call in requested:
-            execute(call, round_number, "model" if planner else "system")
-    if not baseline_done:
-        # The planner may add evidence and context but cannot replace the baseline authorized title search,
-        # so tool use never yields less evidence than the fixed pipeline.
-        execute(ToolCall(name="search_knowledge", arguments={"query": title}), last_round + 1, "system", budgeted=False)
-    # Baseline passages are kept first so the 20-passage evidence cap can never drop them.
-    ordered = [hits[chunk_id] for chunk_id in baseline_ids] + [hit for chunk_id, hit in hits.items() if chunk_id not in baseline_ids]
-    return Gathered(hits=ordered[:20], context=list(dict.fromkeys(context))[-20:], trace=trace)
+        loop.run_round(round_number, requested)
+    return loop.finish(last_round)
+
+
+LOOPS = ("handwritten", "langgraph")
+
+
+def gatherer(loop="handwritten"):
+    """Select the orchestration; both share ``ToolLoop`` and therefore the same server enforcement."""
+    if loop == "handwritten":
+        return gather
+    if loop == "langgraph":
+        from supportops import agent_graph  # imported lazily so the default path never loads LangGraph
+
+        return agent_graph.gather
+    raise ValueError("unknown analysis loop")

@@ -21,6 +21,10 @@ def main():
     settings = load_settings()
     if not settings.database_url:
         raise SystemExit("DATABASE_URL is required")
+    if settings.analysis_loop == "langgraph":
+        from supportops.agent_graph import ensure_no_external_tracing
+
+        ensure_no_external_tracing()
     engine = make_engine(settings.database_url)
     provider = OllamaGeneration(args.model, settings.embedding_url, digest=args.digest) if args.model else MockGeneration()
     try:
@@ -28,7 +32,7 @@ def main():
             with Session(engine) as session, session.begin():
                 claimed = claim_job(session)
             if claimed:
-                execute_job(engine, *claimed, provider)
+                execute_job(engine, *claimed, provider, loop=settings.analysis_loop)
             if args.once:
                 break
             if not claimed:

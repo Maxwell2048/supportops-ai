@@ -5,7 +5,8 @@ import pytest
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
-from supportops.agent_tools import MAX_CALLS
+from supportops import agent_tools
+from supportops.agent_tools import LOOPS, MAX_CALLS
 from supportops.generation import MockGeneration, ToolCall
 from supportops.jobs import execute_job
 from supportops.models import AnalysisJob, Ticket, TicketMessage, User
@@ -17,6 +18,14 @@ pytestmark = pytest.mark.integration
 
 TICKET = synthetic_id("ticket-1")
 AGENT = synthetic_id("agent-a")
+
+
+@pytest.fixture(autouse=True, params=LOOPS)
+def analysis_loop(request, monkeypatch):
+    """Run every case here under both orchestrations; they share the same server-side enforcement."""
+    selected = agent_tools.gatherer(request.param)
+    monkeypatch.setattr(agent_tools, "gatherer", lambda loop="handwritten": selected)
+    return request.param
 
 
 class Scripted(MockGeneration):
