@@ -109,3 +109,66 @@ def test_changed_model_after_generation_is_rejected():
 def test_invalid_pinned_digest_is_rejected():
     with pytest.raises(ValueError):
         OllamaGeneration("test-model", digest="short")
+
+
+TOOLS = [{"type": "function", "function": {"name": "search_knowledge", "description": "Search", "parameters": {"type": "object"}}}]
+
+
+def test_mock_plan_requests_history_and_search_then_stops():
+    provider = MockGeneration()
+    calls = provider.plan("Cannot sign in\nDetails", [], TOOLS)
+    assert [(call.name, call.arguments) for call in calls] == [("ticket_history", {}), ("search_knowledge", {"query": "Cannot sign in"})]
+    assert provider.plan("Cannot sign in\nDetails", [{"tool": "ticket_history", "result": {}}], TOOLS) == []
+
+
+def test_local_plan_offers_only_server_tools_and_treats_data_as_untrusted():
+    def handler(request):
+        body = json.loads(request.content)
+        assert body["tools"] == TOOLS and "format" not in body and body["stream"] is False
+        assert "untrusted" in body["messages"][0]["content"]
+        assert json.loads(body["messages"][1]["content"])["observations"] == [{"tool": "x", "error": "tool_not_allowed"}]
+        return httpx.Response(200, json={"done": True, "message": {"content": "", "tool_calls": [
+            {"function": {"name": "search_knowledge", "arguments": {"query": "sign in"}}},
+            {"function": {"name": "delete_ticket", "arguments": "{\"id\": 1}"}},
+        ]}})
+    provider = OllamaGeneration("test-model", transport=httpx.MockTransport(handler))
+    calls = provider.plan("A ticket", [{"tool": "x", "error": "tool_not_allowed"}], TOOLS)
+    # Unknown names are returned for the server to reject and record; parsing does not execute anything.
+    assert [(call.name, call.arguments) for call in calls] == [("search_knowledge", {"query": "sign in"}), ("delete_ticket", {"id": 1})]
+
+
+def test_local_plan_without_tool_calls_is_ready_to_draft():
+    provider = OllamaGeneration("test-model", transport=httpx.MockTransport(lambda _: response("Enough information")))
+    assert provider.plan("A ticket", [], TOOLS) == []
+
+
+@pytest.mark.parametrize("calls", [
+    "not a list",
+    [{"function": {"arguments": {}}}],
+    [{"function": {"name": "search_knowledge", "arguments": "[1, 2]"}}],
+    [{"function": {"name": "search_knowledge", "arguments": "{not json"}}],
+    [{"function": {"name": "search_knowledge", "arguments": {}}}] * 21,
+])
+def test_malformed_plans_are_invalid_output(calls):
+    payload = httpx.Response(200, json={"done": True, "message": {"content": "", "tool_calls": calls}})
+    provider = OllamaGeneration("test-model", transport=httpx.MockTransport(lambda _: payload))
+    with pytest.raises(GenerationError) as error:
+        provider.plan("A ticket", [], TOOLS)
+    assert error.value.kind == GenerationFailure.INVALID_OUTPUT
+
+
+def test_plan_rejects_missing_tool_offer():
+    with pytest.raises(ValueError):
+        MockGeneration().plan("A ticket", [], [])
+
+
+def test_local_generation_sends_history_as_untrusted_context():
+    def handler(request):
+        body = json.loads(request.content)
+        assert json.loads(body["messages"][1]["content"])["history"] == ["{\"kind\": \"message\"}"]
+        assert "untrusted" in body["messages"][0]["content"]
+        return response(valid())
+    provider = OllamaGeneration("test-model", transport=httpx.MockTransport(handler))
+    assert provider.generate("A ticket", [], context=["{\"kind\": \"message\"}"]).category == "other"
+    with pytest.raises(ValueError):
+        provider.generate("A ticket", [], context=["x" * 4001])

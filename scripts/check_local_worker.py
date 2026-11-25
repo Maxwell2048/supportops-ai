@@ -54,12 +54,16 @@ def main():
                 "worker.make_engine = lambda url: sqlalchemy.create_engine(url, hide_parameters=True, "
                 "connect_args={'options': '-csearch_path=' + os.environ['SUPPORTOPS_TEST_SCHEMA'] + ',public'}); worker.main()")
         run = subprocess.run([sys.executable, '-c', code, '--once', '--model', args.model, '--digest', args.digest],
-                             env=environment, capture_output=True, text=True, timeout=120)
+                             env=environment, capture_output=True, text=True, timeout=600)
         if run.returncode:
             raise SystemExit('Worker process failed; inspect local configuration')
         with Session(engine) as session:
             job = session.get(AnalysisJob, job_id)
             print('Job status:', job.status, 'error:', job.error_code)
+            for call in job.tool_trace or []:
+                print('Tool call: round', call['round'], call['planner'], call['tool'], call['status'],
+                      'results', call['result_count'], call.get('reason') or '', call.get('errors') or '',
+                      call.get('arguments') or '')
             if (job.generation_provider, job.generation_model, job.generation_digest) != ('ollama', args.model, args.digest):
                 raise SystemExit('Pinned model provenance was not recorded')
             print('Pinned model provenance recorded')
