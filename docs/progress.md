@@ -1,6 +1,6 @@
 # Progress and staged tasks
 
-Updated: 2026-11-25 (Australia/Perth).
+Updated: 2026-11-26 (Australia/Perth).
 
 States: planned = unimplemented; drafted = design only; implemented = artifacts exist; verified = actual execution evidence. M1 S05-S08, M2 S09-S12 and M3 S13-S14 are locally verified. Generation provider boundaries begin at S15.
 
@@ -152,3 +152,7 @@ Implemented an optional LangGraph `StateGraph` for the analysis tool loop, selec
 Implemented a separate MCP server process (`supportops.mcp_server`, official SDK `mcp==2.3.0`, stateless Streamable HTTP at `/mcp`, loopback-only Host and Origin checks) with four read-only allow-listed tools: `list_my_tickets`, `get_ticket`, `ticket_history` and `search_knowledge`. The bearer token is the existing access JWT, verified by the API's own `decode_subject`; every call reloads the user in its own transaction, denies requesters and inactive users before looking at arguments, validates strict bounded arguments without echoing values, reads through `list_tickets`, `visible_ticket`, the analysis `_history` rule and the scoped `retrieval.search`, and writes a `mcp_tool_calls` audit row (migration 0011) before returning anything. See [design](mcp.md) and [ADR 0012](adr/0012-read-only-mcp-server.md).
 
 Verified locally on 2026-11-25: 421 backend tests passed with zero skips on PostgreSQL 17.11, including 32 new unit and 8 new integration tests that drive the SDK client over Streamable HTTP, and the previously unexecuted LangGraph integration cases; 145 passed and 276 skipped without a database; a separate uvicorn process returned 401 without a token, 421 for a foreign Host and listed the four tools. See [evidence](evidence/2026-11-25-mcp-server.md). A real Claude client, the development database migration, the Compose restore check and remote CI remain unverified.
+
+## README refresh
+
+Implemented on 2026-11-26 as part of S27: the root README is now a project landing page with screenshots, features by role, an architecture diagram, a Docker Compose quick start, testing and stack summaries, a grouped documentation index and a condensed roadmap. Stage-by-stage test history stays here and in the evidence files. Verified: the screenshots were captured from a disposable synthetic Compose stack that was removed afterwards, all relative README links resolve, the Markdown and Mermaid render, and the repository language check passed. The quoted CI counts come from the `main` run at `cfd17d2`. See [evidence](evidence/2026-11-26-readme-refresh.md). A fresh-clone quick start on another machine remains unverified.
