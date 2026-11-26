@@ -2,6 +2,7 @@
 
 This is a character-policy guard, not a semantic proof that prose is English.
 Ignored local data (including .env and database files) is never scanned.
+The Simplified Chinese README is the one approved exception (see AGENTS.md).
 """
 
 import argparse
@@ -10,6 +11,8 @@ import subprocess
 
 
 ROOT = Path(__file__).resolve().parents[1]
+# The project owner approved one translated landing page; its file name stays ASCII.
+TRANSLATIONS = {'README.zh-CN.md'}
 
 
 def git(*args):
@@ -17,8 +20,8 @@ def git(*args):
 
 
 def contains_cjk(content):
-    if content.startswith((b'\x89PNG\r\n\x1a\n', b'\xff\xd8\xff')):
-        return False  # Screenshot pixels are not UTF-8 repository prose.
+    if content.startswith((b'\x89PNG\r\n\x1a\n', b'\xff\xd8\xff', b'GIF87a', b'GIF89a')):
+        return False  # Screenshot and animation pixels are not UTF-8 repository prose.
     text = content.decode('utf-8', errors='replace')
     return any(
         0x3400 <= ord(char) <= 0x9FFF
@@ -36,7 +39,7 @@ def main():
     failures = []
     for name in sorted(paths):
         file = ROOT / name
-        if contains_cjk(name.encode()) or (file.is_file() and contains_cjk(file.read_bytes())):
+        if contains_cjk(name.encode()) or (name not in TRANSLATIONS and file.is_file() and contains_cjk(file.read_bytes())):
             failures.append(name)
     commits, blobs = [], set()
     if args.history:
@@ -51,7 +54,7 @@ def main():
                 _, kind, object_id = metadata.split()
                 if contains_cjk(name):
                     failures.append(f'{commit[:7]}:filename')
-                if kind == b'blob' and object_id not in blobs:
+                if kind == b'blob' and object_id not in blobs and name.decode() not in TRANSLATIONS:
                     blobs.add(object_id)
                     if contains_cjk(git('cat-file', 'blob', object_id.decode())):
                         failures.append(f'{commit[:7]}:{name.decode()}')

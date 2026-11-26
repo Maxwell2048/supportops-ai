@@ -9,5 +9,5 @@
 - Local checks: `cd backend; uv run pytest` and `cd frontend; npm ci; npm run build` (run each command from its stated directory).
 - At each stage end, prepare a detailed first-person Git commit message explaining important changes, reasons, validation and limitations. Use only the user's supplied Git author identity for commits; never invent it. Record the message in docs/commit-notes/. Do not claim a commit or push succeeded without execution evidence.
 
-- Use English for all repository content, code comments, commit messages, PR/issue descriptions, and GitHub-facing communication. Use Chinese only when conversing with the project owner.
+- Use English for all repository content, code comments, commit messages, PR/issue descriptions, and GitHub-facing communication. Use Chinese only when conversing with the project owner. The one approved exception is `README.zh-CN.md`, a Simplified Chinese translation of the root README; keep it in step with `README.md`.
 - Run `python scripts/check_repository_language.py` before publication; use `--history` when validating a history rewrite. Preserve historical test outcomes and distinguish translation from new execution evidence.
