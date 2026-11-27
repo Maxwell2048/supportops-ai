@@ -1,0 +1,9 @@
+fix(compose): restart the database and web services with the stack
+
+I gave the db and web services in compose.full.yaml the same restart: unless-stopped policy that api and worker already had. Before this, a Docker engine restart brought back only the API and the worker. The API stayed up but unready, because the database was still stopped. The worker restarted hundreds of times, because the stopped database's db host name no longer resolved. The web port stayed closed. I saw exactly this on a local supportops-app stack after the engine stopped on 2026-11-21. The one-shot migrate service still has no restart policy, because restarting it would rerun a completed migration job.
+
+I documented the policy in docs/compose.md, including how to fix a stack created from the older file in place with docker update or by recreating it. I recorded the failure and the checks in docs/evidence/2026-11-27-compose-restart-policy.md and added a progress entry.
+
+Validation: docker compose config renders unless-stopped for db, api, worker and web, and none for migrate. A disposable project (supportops-restartcheck, a throwaway env file outside the repository, synthetic data) built from this branch reached healthy. Its containers carried the same policies. After a PostgreSQL fast shutdown Docker restarted the database, which became healthy again; /ready returned 200 and the worker did not restart. After nginx stopped, Docker restarted web and / returned 200. I removed the project's containers, volume and images afterwards. The language check passed with 300 files.
+
+Limitations: I did not repeat a real engine or host restart; that case relies on Docker's documented unless-stopped behavior. After an engine restart Docker does not apply depends_on ordering, so the API and worker can fail briefly until the database is healthy, and they recover through their own restart policies. The database-only compose.yaml is unchanged.
