@@ -13,6 +13,8 @@ docker compose -f compose.full.yaml exec -T -e DEMO_PASSWORD api python -m suppo
 
 Open `http://127.0.0.1:8080`. The seed command inserts missing synthetic fixtures and activates only accounts still marked as never activated. It preserves existing account passwords and deactivations. Set `SUPPORTOPS_WEB_PORT` before starting to change the host port. The container worker uses the mock provider. The standalone local model worker remains separately documented in [jobs](jobs.md).
 
+The long-running services (database, API, worker and web) use `restart: unless-stopped`, so Docker starts them again after the engine or the host restarts, unless they were stopped explicitly. The one-shot migration has no restart policy. Before this policy covered the database and web services, an engine restart brought back only the API and worker: the API stayed unready and the worker restarted in a loop because the `db` host name no longer resolved. A stack created from an older file can be fixed in place with `docker update --restart unless-stopped <container>` or by recreating it with `docker compose -f compose.full.yaml up -d`.
+
 ## Backup and isolated restore
 
 Backups can contain private data. Store them outside version control with access restricted to authorized operators. The backup command refuses to overwrite an existing output file. Restore creates a new database named `restore_` followed by lowercase letters or digits. It refuses an existing database and does not replace the active application database. A failed restore leaves its newly created target for inspection.

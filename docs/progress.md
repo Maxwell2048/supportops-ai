@@ -1,6 +1,6 @@
 # Progress and staged tasks
 
-Updated: 2026-11-26 (Australia/Perth).
+Updated: 2026-11-27 (Australia/Perth).
 
 States: planned = unimplemented; drafted = design only; implemented = artifacts exist; verified = actual execution evidence. M1 S05-S08, M2 S09-S12 and M3 S13-S14 are locally verified. Generation provider boundaries begin at S15.
 
@@ -158,3 +158,7 @@ Verified locally on 2026-11-25: 421 backend tests passed with zero skips on Post
 Implemented on 2026-11-26 as part of S27: the root README is now a project landing page with screenshots, features by role, an architecture diagram, a Docker Compose quick start, testing and stack summaries, a grouped documentation index and a condensed roadmap. Stage-by-stage test history stays here and in the evidence files. Verified: the screenshots were captured from a disposable synthetic Compose stack that was removed afterwards, all relative README links resolve, the Markdown and Mermaid render, and the repository language check passed. The quoted CI counts come from the `main` run at `cfd17d2`. See [evidence](evidence/2026-11-26-readme-refresh.md). A fresh-clone quick start on another machine remains unverified.
 
 Later the same day, I added an MIT license, a Simplified Chinese README (`README.zh-CN.md`, the one approved exception to the English-only rule, allowed by the language check), a recorded demo animation, and diagrams and tables for the review sequence, ticket states, configuration, API and MCP setup. Links, anchors, the language check and all six Mermaid diagrams were verified; see the same [evidence](evidence/2026-11-26-readme-refresh.md).
+
+## Compose restart policy
+
+Implemented on 2026-11-27: the `db` and `web` services in `compose.full.yaml` now use `restart: unless-stopped`, so a Docker engine restart no longer leaves the API unready and the worker in a restart loop. Verified on a disposable synthetic stack: the rendered config and created containers carry the policy, and Docker restarted the database after a PostgreSQL fast shutdown and the web container after nginx stopped, with readiness returning 200 afterwards. See [evidence](evidence/2026-11-27-compose-restart-policy.md). A real engine or host restart was not repeated.
